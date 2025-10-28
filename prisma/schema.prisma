@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AggregateType {
+  FINE
+  COARSE
+}
+
+enum StrandSize {
+  SIZE_3_8
+  SIZE_1_2
+  SIZE_0_6
+}
+
+enum StrandPosition {
+  TOP
+  BOTTOM
+  BOTH
+}
+
+model Aggregate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  type      AggregateType
+  sieves    Sieve[]
+  isDefault Boolean  @default(false)
+  order     Int      @default(0)
+  maxDecant Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  records   GradationRecord[]
+}
+
+model Sieve {
+  id          String    @id @default(cuid())
+  aggregate   Aggregate @relation(fields: [aggregateId], references: [id], onDelete: Cascade)
+  aggregateId String
+  name        String
+  size        Float
+  order       Int
+  c33Lower    Float?
+  c33Upper    Float?
+}
+
+model GradationRecord {
+  id               String        @id @default(cuid())
+  aggregate        Aggregate?    @relation(fields: [aggregateId], references: [id])
+  aggregateId      String?
+  aggregateName    String
+  aggregateType    AggregateType
+  date             DateTime
+  totalWeight      Float
+  washedWeight     Float?
+  finenessModulus  Float?
+  decant           Float?
+  notes            String?
+  tester           String?
+  sieveResults     SieveResult[]
+  createdAt        DateTime      @default(now())
+}
+
+model SieveResult {
+  id                 String          @id @default(cuid())
+  record             GradationRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  recordId           String
+  name               String
+  size               Float
+  weightRetained     Float
+  percentRetained    Float
+  cumulativeRetained Float
+  percentPassing     Float
+  c33Lower           Float?
+  c33Upper           Float?
+  order              Int
+}
+
+model StrandPattern {
+  id                     String                 @id @default(cuid())
+  patternId              String                 @unique
+  position               StrandPosition
+  strandCountThreeEight  Int                    @default(0)
+  strandCountOneHalf     Int                    @default(0)
+  strandCountZeroSix     Int                    @default(0)
+  pullingForcePercent    Float?
+  totalArea              Float?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  grades                 StrandPatternGrade[]
+  coordinates            StrandPatternCoordinate[]
+}
+
+model StrandPatternGrade {
+  id          String         @id @default(cuid())
+  pattern     StrandPattern  @relation(fields: [patternId], references: [id], onDelete: Cascade)
+  patternId   String
+  size        StrandSize
+  grade       String
+  count       Int            @default(0)
+  createdAt   DateTime       @default(now())
+}
+
+model StrandPatternCoordinate {
+  id          String         @id @default(cuid())
+  pattern     StrandPattern  @relation(fields: [patternId], references: [id], onDelete: Cascade)
+  patternId   String
+  size        StrandSize
+  order       Int
+  xInches     Float
+  yInches     Float
+  createdAt   DateTime       @default(now())
+}

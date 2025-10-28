@@ -1,0 +1,2737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregate Gradation Analysis</title>
+    <style>
+        /* Reset and base styles */
+        *, *::before, *::after { box-sizing: border-box; }
+        * { margin: 0; }
+        body { line-height: 1.5; -webkit-font-smoothing: antialiased; }
+        img, picture, video, canvas, svg { display: block; max-width: 100%; }
+        input, button, textarea, select { font: inherit; }
+        p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+        #root, #__next { isolation: isolate; }
+
+        /* Tailwind CSS utility classes */
+        .min-h-screen { min-height: 100vh; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-white { background-color: #ffffff; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-yellow-100 { background-color: #fef3c7; }
+        .bg-yellow-50 { background-color: #fffbeb; }
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-green-50 { background-color: #f0fdf4; }
+        .bg-red-100 { background-color: #fef2f2; }
+        .bg-green-100 { background-color: #dcfce7; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .bg-green-600 { background-color: #16a34a; }
+        .bg-purple-600 { background-color: #9333ea; }
+        .bg-orange-600 { background-color: #ea580c; }
+        .bg-red-600 { background-color: #dc2626; }
+        .bg-gray-600 { background-color: #4b5563; }
+        .bg-gray-400 { background-color: #9ca3af; }
+        .bg-gray-500 { background-color: #6b7280; }
+        .bg-transparent { background-color: transparent; }
+        .text-white { color: #ffffff; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-800 { color: #1f2937; }
+        .text-red-600 { color: #dc2626; }
+        .text-red-700 { color: #b91c1c; }
+        .text-green-600 { color: #16a34a; }
+        .text-green-700 { color: #15803d; }
+        .text-blue-600 { color: #2563eb; }
+        .text-blue-800 { color: #1e40af; }
+        .border { border-width: 1px; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .border-gray-400 { border-color: #9ca3af; }
+        .border-red-400 { border-color: #f87171; }
+        .border-green-400 { border-color: #4ade80; }
+        .border-blue-500 { border-color: #3b82f6; }
+        .border-2 { border-width: 2px; }
+        .border-dashed { border-style: dashed; }
+        .border-0 { border-width: 0px; }
+        .border-collapse { border-collapse: collapse; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-0\.5 { padding-left: 0.125rem; padding-right: 0.125rem; }
+        .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-0 { padding-top: 0px; padding-bottom: 0px; }
+        .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .ml-1 { margin-left: 0.25rem; }
+        .ml-2 { margin-left: 0.5rem; }
+        .ml-3 { margin-left: 0.75rem; }
+        .mr-3 { margin-right: 0.75rem; }
+        .w-full { width: 100%; }
+        .w-10 { width: 2.5rem; }
+        .w-11\/12 { width: 91.666667%; }
+        .max-w-7xl { max-width: 80rem; }
+        .max-w-6xl { max-width: 72rem; }
+        .max-w-xl { max-width: 36rem; }
+        .max-w-md { max-width: 28rem; }
+        .max-h-32 { max-height: 8rem; }
+        .max-h-\[80vh\] { max-height: 80vh; }
+        .h-full { height: 100%; }
+        .h-48 { height: 12rem; }
+        .h-96 { height: 24rem; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-grow { flex-grow: 1; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .items-end { align-items: flex-end; }
+        .items-stretch { align-items: stretch; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .justify-end { justify-content: flex-end; }
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .space-y-1 > * + * { margin-top: 0.25rem; }
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-base { font-size: 1rem; line-height: 1.5rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .text-left { text-align: left; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .cursor-pointer { cursor: pointer; }
+        .transition-colors { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .hover\:bg-red-700:hover { background-color: #b91c1c; }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+        .hover\:bg-green-700:hover { background-color: #15803d; }
+        .hover\:bg-purple-700:hover { background-color: #7c2d12; }
+        .hover\:bg-orange-700:hover { background-color: #c2410c; }
+        .hover\:bg-gray-700:hover { background-color: #374151; }
+        .hover\:bg-gray-500:hover { background-color: #6b7280; }
+        .hover\:bg-gray-100:hover { background-color: #f3f4f6; }
+        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
+        .hover\:border-gray-400:hover { border-color: #9ca3af; }
+        .hover\:text-gray-700:hover { color: #374151; }
+        .hover\:text-gray-800:hover { color: #1f2937; }
+        .hover\:text-blue-800:hover { color: #1e40af; }
+        .hover\:text-green-800:hover { color: #166534; }
+        .hover\:text-red-800:hover { color: #991b1c; }
+        .hover\:text-white:hover { color: #ffffff; }
+        .hover\:bg-red-600:hover { background-color: #dc2626; }
+        .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+        .focus\:ring-1:focus { box-shadow: 0 0 0 1px rgb(59 130 246 / 0.5); }
+        .focus\:ring-blue-400:focus { box-shadow: 0 0 0 1px rgb(96 165 250 / 0.5); }
+        .focus\:bg-white:focus { background-color: #ffffff; }
+        .focus\:border:focus { border-width: 1px; }
+        .focus\:border-blue-400:focus { border-color: #60a5fa; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .overflow-x-auto { overflow-x: auto; }
+        .overflow-y-auto { overflow-y: auto; }
+        .overflow-auto { overflow: auto; }
+        .overflow-hidden { overflow: hidden; }
+        .sticky { position: sticky; }
+        .left-0 { left: 0px; }
+        .fixed { position: fixed; }
+        .inset-0 { inset: 0px; }
+        .absolute { position: absolute; }
+        .relative { position: relative; }
+        .z-50 { z-index: 50; }
+        .z-100 { z-index: 100; }
+        .bg-black { background-color: #000000; }
+        .bg-opacity-50 { background-color: rgb(0 0 0 / 0.5); }
+        .list-disc { list-style-type: disc; }
+        .list-inside { list-style-position: inside; }
+        .underline { text-decoration-line: underline; }
+        .hidden { display: none; }
+        .block { display: block; }
+        .bg-inherit { background-color: inherit; }
+        .print-only { display: none; }
+        .print-visible { display: none; }
+        
+        /* Custom app styles */
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        table th, table td { border: 1px solid #d1d5db; padding: 0.25rem 0.5rem; text-align: center; }
+        table th { background-color: #f3f4f6; font-weight: 600; }
+        table tbody tr:nth-child(even) { background-color: #f9fafb; }
+        table tfoot { background-color: #fef3c7; }
+        input, select, button { font-family: inherit; }
+        input:focus, select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 1px #3b82f6; }
+        input[type="number"] { -moz-appearance: textfield; }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        button { cursor: pointer; transition: all 0.2s; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .loading { display: flex; align-items: center; justify-content: center; min-height: 12rem; }
+        .spinner { width: 2rem; height: 2rem; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .chart-container { width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.25rem; margin-top: 0.5rem; position: relative; overflow: hidden; }
+        .chart-svg { width: 100%; height: 100%; }
+        
+        /* Responsive design */
+        @media (min-width: 640px) {
+            .sm\:flex-row { flex-direction: row; }
+            .sm\:items-center { align-items: center; }
+        }
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        
+        @media print {
+            /* === GENERAL RULES === */
+            .no-print { display: none !important; }
+            .print-visible { display: block !important; }
+            table { border-collapse: collapse !important; }
+            td, th { border: 1px solid #000 !important; }
+            .print-page { page-break-after: always; padding: 0; }
+            .print-page:last-child { page-break-after: auto; }
+            .print-form-small { break-inside: avoid; margin-bottom: 0.5in; }
+
+            /* === DEFAULT PRINT MODE (Portrait, Blank Forms) === */
+            @page {
+                size: letter portrait;
+                margin: 0.5in;
+            }
+
+            /* By default, hide everything inside #app except for the .print-only container */
+            body:not(.js-printing-record) #app > :not(.print-only) {
+                display: none !important;
+            }
+            body:not(.js-printing-record) .print-only {
+                display: block !important;
+            }
+
+            /* === RECORD PRINT MODE (Portrait, Modal) === */
+            @page record_portrait {
+                size: letter portrait;
+            }
+            body.js-printing-record {
+                page: record_portrait;
+            }
+            
+            /* Hide all direct children of #app... */
+            body.js-printing-record #app > * {
+                display: none !important;
+            }
+            /* ...and then UN-hide the modal's container to make it print. */
+            body.js-printing-record #app > .fixed.inset-0 {
+                display: block !important;
+                position: static !important;
+                background: none !important;
+                padding: 0 !important;
+            }
+
+            /* Reset modal content styles for printing */
+            body.js-printing-record .print-all-content {
+                max-width: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+
+            /* Apply the vertical layout - gradation results on top, chart on bottom */
+            body.js-printing-record .record-view-grid {
+                display: block !important;
+            }
+
+            /* Add spacing before the Gradation Curve section */
+            body.js-printing-record .record-view-grid > div:last-child {
+                margin-top: 4rem !important;
+            }
+
+            /* Ensure the chart has enough height */
+            body.js-printing-record #viewRecordChart {
+                height: 400px !important;
+                margin-top: 1rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen bg-gray-50 p-3">
+        <div class="max-w-7xl mx-auto">
+            <div id="app">
+                <!-- App content will be rendered here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONSTANTS =====
+        const STANDARD_SIEVES = {
+            '1"': 25.0,
+            '3/4"': 19.0,
+            '1/2"': 12.5,
+            '3/8"': 9.5,
+            '#4': 4.75,
+            '#8': 2.36,
+            '#16': 1.18,
+            '#30': 0.6,
+            '#50': 0.3,
+            '#100': 0.15,
+            '#200': 0.075,
+            'Pan': 0
+        };
+
+        const DEFAULT_AGGREGATES = {
+            'Keystone #7': {
+                type: 'Coarse',
+                sieves: [
+                    { name: '1"', size: 25.0, c33Lower: 100, c33Upper: 100 },
+                    { name: '3/4"', size: 19.0, c33Lower: 90, c33Upper: 100 },
+                    { name: '1/2"', size: 12.5, c33Lower: '-', c33Upper: '-' },
+                    { name: '3/8"', size: 9.5, c33Lower: 20, c33Upper: 55 },
+                    { name: '#4', size: 4.75, c33Lower: 0, c33Upper: 10 },
+                    { name: '#8', size: 2.36, c33Lower: 0, c33Upper: 5 },
+                    { name: '#16', size: 1.18, c33Lower: '-', c33Upper: '-' },
+                    { name: '#30', size: 0.6, c33Lower: '-', c33Upper: '-' },
+                    { name: '#50', size: 0.3, c33Lower: '-', c33Upper: '-' },
+                    { name: '#100', size: 0.15, c33Lower: '-', c33Upper: '-' },
+                    { name: '#200', size: 0.075, c33Lower: '-', c33Upper: '-' },
+                    { name: 'Pan', size: 0, c33Lower: '-', c33Upper: '-' }
+                ]
+            },
+            'Kraemer 9/16"': {
+                type: 'Coarse',
+                sieves: [
+                    { name: '1"', size: 25.0, c33Lower: 100, c33Upper: 100 },
+                    { name: '3/4"', size: 19.0, c33Lower: 100, c33Upper: 100 },
+                    { name: '1/2"', size: 12.5, c33Lower: 85, c33Upper: 100 },
+                    { name: '3/8"', size: 9.5, c33Lower: 10, c33Upper: 30 },
+                    { name: '#4', size: 4.75, c33Lower: 0, c33Upper: 10 },
+                    { name: '#8', size: 2.36, c33Lower: 0, c33Upper: 5 },
+                    { name: '#16', size: 1.18, c33Lower: '-', c33Upper: '-' },
+                    { name: '#30', size: 0.6, c33Lower: '-', c33Upper: '-' },
+                    { name: '#50', size: 0.3, c33Lower: '-', c33Upper: '-' },
+                    { name: '#100', size: 0.15, c33Lower: '-', c33Upper: '-' },
+                    { name: '#200', size: 0.075, c33Lower: '-', c33Upper: '-' },
+                    { name: 'Pan', size: 0, c33Lower: '-', c33Upper: '-' }
+                ]
+            },
+            '#9 Gravel (St. Croix)': {
+                type: 'Coarse',
+                sieves: [
+                    { name: '1"', size: 25.0, c33Lower: 100, c33Upper: 100 },
+                    { name: '3/4"', size: 19.0, c33Lower: 100, c33Upper: 100 },
+                    { name: '1/2"', size: 12.5, c33Lower: 100, c33Upper: 100 },
+                    { name: '3/8"', size: 9.5, c33Lower: 85, c33Upper: 100 },
+                    { name: '#4', size: 4.75, c33Lower: 10, c33Upper: 30 },
+                    { name: '#8', size: 2.36, c33Lower: 0, c33Upper: 10 },
+                    { name: '#16', size: 1.18, c33Lower: 0, c33Upper: 5 },
+                    { name: '#30', size: 0.6, c33Lower: '-', c33Upper: '-' },
+                    { name: '#50', size: 0.3, c33Lower: '-', c33Upper: '-' },
+                    { name: '#100', size: 0.15, c33Lower: '-', c33Upper: '-' },
+                    { name: '#200', size: 0.075, c33Lower: '-', c33Upper: '-' },
+                    { name: 'Pan', size: 0, c33Lower: '-', c33Upper: '-' }
+                ]
+            },
+            'Concrete Sand': {
+                type: 'Fine',
+                sieves: [
+                    { name: '3/8"', size: 9.5, c33Lower: 100, c33Upper: 100 },
+                    { name: '#4', size: 4.75, c33Lower: 95, c33Upper: 100 },
+                    { name: '#8', size: 2.36, c33Lower: 80, c33Upper: 100 },
+                    { name: '#16', size: 1.18, c33Lower: 50, c33Upper: 85 },
+                    { name: '#30', size: 0.6, c33Lower: 25, c33Upper: 60 },
+                    { name: '#50', size: 0.3, c33Lower: 5, c33Upper: 30 },
+                    { name: '#100', size: 0.15, c33Lower: 0, c33Upper: 10 },
+                    { name: '#200', size: 0.075, c33Lower: 0, c33Upper: 3 },
+                    { name: 'Pan', size: 0, c33Lower: '-', c33Upper: '-' }
+                ]
+            }
+        };
+
+        // ===== GLOBAL STATE =====
+        let appState = {
+            aggregates: {},
+            savedRecords: [],
+            defaultAggregates: [],
+            activeTests: [],
+            currentView: 'main',
+            selectedAggregate: '',
+            date: new Date().toISOString().split('T')[0],
+            showAddMore: false,
+            showPrintModal: false,
+            error: null,
+            successMessage: null,
+            editingAggregate: null,
+            showAddForm: false,
+            newAggregateName: '',
+            newAggregateType: 'Fine',
+            importFromExisting: '',
+            confirmingDelete: null,
+            showSieveSelector: null,
+            confirmingDeleteRecord: null,
+            filterAggregate: '',
+            filterType: '',
+            filterDateFrom: '',
+            filterDateTo: '',
+            repositorySort: 'date-desc',
+            repositorySearch: '',
+            viewingRecord: null,
+            viewingDate: null,
+            showExportOptions: null,
+            selectedDefaults: [],
+            aggregateOrder: [],
+            showNoProductionDateRange: false,
+            noProductionStartDate: new Date().toISOString().split('T')[0],
+            noProductionEndDate: new Date().toISOString().split('T')[0],
+            editingRecord: null,
+            showEditModal: false,
+            showBulkImport: false,
+            bulkImportText: '',
+            bulkImportError: null
+        };
+
+        // ===== UTILITY FUNCTIONS =====
+        function escapeHtmlAttr(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function formatDateForDisplay(dateString) {
+            const [year, month, day] = dateString.split('-').map(Number);
+            const localDate = new Date(year, month - 1, day);
+            return localDate.toLocaleDateString();
+        }
+
+        function calculateTestData(sieveData) {
+            const totalWeight = sieveData.reduce((sum, row) => sum + (parseFloat(row.weightRetained) || 0), 0);
+            let cumulativeRetained = 0;
+            return sieveData.map((row) => {
+                const weight = parseFloat(row.weightRetained) || 0;
+                const percentRetained = totalWeight > 0 ? (weight / totalWeight * 100) : 0;
+                cumulativeRetained += percentRetained;
+                const percentPassing = Math.max(0, Math.min(100, 100 - cumulativeRetained));
+                const roundedPassing = Math.round(percentPassing);
+                return {
+                    ...row,
+                    percentRetained: percentRetained.toFixed(1),
+                    cumulativeRetained: cumulativeRetained.toFixed(1),
+                    percentPassing: roundedPassing.toString()
+                };
+            });
+        }
+
+        function calculateFinenessModulus(aggregateType, sieveData) {
+            if (aggregateType !== 'Fine') return 'N/A';
+            const fmSieves = ['3/8"', '#4', '#8', '#16', '#30', '#50', '#100'];
+            const fmSum = sieveData
+                .filter(row => fmSieves.includes(row.name))
+                .reduce((sum, row) => sum + parseFloat(row.cumulativeRetained || 0), 0);
+            return (fmSum / 100).toFixed(2);
+        }
+
+        function calculateDecant(sieveData, washedWeight) {
+            const totalWeight = sieveData.reduce((sum, row) => sum + (parseFloat(row.weightRetained) || 0), 0);
+            const washed = parseFloat(washedWeight) || 0;
+            if (totalWeight > 0 && washed <= totalWeight) {
+                return ((totalWeight - washed) / totalWeight * 100).toFixed(2);
+            }
+            return '0.00';
+        }
+
+        const apiBase = '/api/gradation';
+
+        async function apiRequest(path, options = {}) {
+            const response = await fetch(`${apiBase}${path}`, {
+                headers: { 'Content-Type': 'application/json' },
+                ...options,
+            });
+
+            if (!response.ok) {
+                const message = await response.text();
+                throw new Error(message || response.statusText);
+            }
+
+            if (response.status === 204) {
+                return null;
+            }
+
+            return response.json();
+        }
+
+        function toClientAggregate(aggregate) {
+            return {
+                id: aggregate.id,
+                name: aggregate.name,
+                type: aggregate.type === 'FINE' ? 'Fine' : 'Coarse',
+                maxDecant: aggregate.maxDecant,
+                isDefault: aggregate.isDefault,
+                order: aggregate.order,
+                sieves: aggregate.sieves
+                    .slice()
+                    .sort((a, b) => a.order - b.order)
+                    .map((sieve) => ({
+                        id: sieve.id,
+                        name: sieve.name,
+                        size: sieve.size,
+                        c33Lower: sieve.c33Lower,
+                        c33Upper: sieve.c33Upper,
+                        order: sieve.order,
+                    })),
+            };
+        }
+
+        function toClientRecord(record) {
+            return {
+                id: record.id,
+                aggregateId: record.aggregateId,
+                aggregateName: record.aggregateName,
+                aggregateType: record.aggregateType === 'FINE' ? 'Fine' : 'Coarse',
+                date: record.date.split('T')[0],
+                totalWeight: record.totalWeight,
+                washedWeight: record.washedWeight,
+                finenessModulus: record.finenessModulus,
+                decant: record.decant,
+                notes: record.notes,
+                tester: record.tester,
+                fullSieveData: (record.sieveResults || [])
+                    .slice()
+                    .sort((a, b) => a.order - b.order)
+                    .map((result) => ({
+                        name: result.name,
+                        size: result.size,
+                        weightRetained: result.weightRetained,
+                        percentRetained: result.percentRetained,
+                        cumulativeRetained: result.cumulativeRetained,
+                        percentPassing: result.percentPassing,
+                        c33Lower: result.c33Lower,
+                        c33Upper: result.c33Upper,
+                        order: result.order,
+                    })),
+                createdAt: record.createdAt,
+            };
+        }
+
+        const aggregateApi = {
+            async list() {
+                const response = await apiRequest('/aggregates', { method: 'GET' });
+                return response.map(toClientAggregate);
+            },
+            async create(data) {
+                const response = await apiRequest('/aggregates', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
+                return toClientAggregate(response);
+            },
+            async update(id, data) {
+                const response = await apiRequest(`/aggregates/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
+                return toClientAggregate(response);
+            },
+            async remove(id) {
+                await apiRequest(`/aggregates/${id}`, { method: 'DELETE' });
+            },
+            async setDefaults(ids) {
+                await apiRequest('/aggregates/defaults', {
+                    method: 'PUT',
+                    body: JSON.stringify({ aggregateIds: ids }),
+                });
+            },
+        };
+
+        const recordApi = {
+            async list() {
+                const response = await apiRequest('/records', { method: 'GET' });
+                return response.map(toClientRecord);
+            },
+            async create(payload) {
+                const response = await apiRequest('/records', {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                });
+                return toClientRecord(response);
+            },
+            async remove(id) {
+                await apiRequest(`/records/${id}`, { method: 'DELETE' });
+            },
+        };
+
+        function setAggregatesInState(aggregates) {
+            appState.aggregates = {};
+            aggregates.forEach((aggregate) => {
+                appState.aggregates[aggregate.name] = {
+                    ...aggregate,
+                    type: aggregate.type,
+                    sieves: aggregate.sieves.map((sieve) => ({ ...sieve })),
+                };
+            });
+
+            appState.aggregateOrder = aggregates
+                .slice()
+                .sort((a, b) => a.order - b.order)
+                .map((aggregate) => aggregate.name);
+
+            const defaultNames = aggregates
+                .filter((aggregate) => aggregate.isDefault)
+                .sort((a, b) => a.order - b.order)
+                .map((aggregate) => aggregate.name);
+
+            appState.defaultAggregates = defaultNames.length > 0 ? defaultNames : aggregates.slice(0, 4).map((aggregate) => aggregate.name);
+            appState.selectedDefaults = [...appState.defaultAggregates];
+        }
+
+        function getAggregateByName(name) {
+            return appState.aggregates[name] ?? null;
+        }
+
+        function getAggregateIdByName(name) {
+            return getAggregateByName(name)?.id ?? null;
+        }
+
+        function sanitizeSievesForApi(sieves) {
+            return sieves.map((sieve, index) => ({
+                name: sieve.name,
+                size: Number(sieve.size ?? 0),
+                c33Lower: sieve.c33Lower === '-' || sieve.c33Lower === '' || sieve.c33Lower === null ? null : Number(sieve.c33Lower),
+                c33Upper: sieve.c33Upper === '-' || sieve.c33Upper === '' || sieve.c33Upper === null ? null : Number(sieve.c33Upper),
+                order: index,
+            }));
+        }
+
+        function recalcTest(test) {
+            const updatedSieveData = calculateTestData(test.sieveData);
+            const totalWeightValue = updatedSieveData.reduce((sum, row) => sum + (parseFloat(row.weightRetained) || 0), 0);
+            const finenessModulus = calculateFinenessModulus(test.aggregateType, updatedSieveData);
+            const decant = calculateDecant(updatedSieveData, test.washedWeight);
+
+            test.sieveData = updatedSieveData;
+            test.totalWeight = totalWeightValue.toFixed(1);
+            test.finenessModulus = finenessModulus;
+            test.decant = decant;
+            test.status = totalWeightValue > 0 ? 'Auto-updated' : 'In Progress';
+        }
+
+        function datasetKeyToAttr(key) {
+            return key.replace(/[A-Z]/g, '-$&').toLowerCase();
+        }
+
+        let pendingFocusState = null;
+
+        function createFocusStateFromElement(element) {
+            if (!element || element === document.body) return null;
+            const tag = element.tagName?.toLowerCase();
+            if (!tag || !['input', 'textarea', 'select'].includes(tag)) return null;
+            const dataset = {};
+            if (element.dataset) {
+                Object.keys(element.dataset).forEach((key) => {
+                    dataset[key] = element.dataset[key];
+                });
+            }
+            const focusKey = dataset.focusKey;
+            const state = { tag, dataset, focusKey };
+            if (typeof element.selectionStart === 'number' && typeof element.selectionEnd === 'number') {
+                state.selectionStart = element.selectionStart;
+                state.selectionEnd = element.selectionEnd;
+            }
+            return state;
+        }
+
+        function queuePendingFocus(element) {
+            pendingFocusState = createFocusStateFromElement(element);
+        }
+
+        function captureFocusState() {
+            const activeState = createFocusStateFromElement(document.activeElement);
+            return activeState || pendingFocusState;
+        }
+
+        function restoreFocusState(state) {
+            if (!state) {
+                pendingFocusState = null;
+                return;
+            }
+            let element = null;
+            if (state.focusKey) {
+                element = document.querySelector(`[data-focus-key="${state.focusKey}"]`);
+            }
+            if (!element && state.dataset && Object.keys(state.dataset).length > 0) {
+                const selectorSuffix = Object.keys(state.dataset)
+                    .map((key) => `[data-${datasetKeyToAttr(key)}="${state.dataset[key]}"]`)
+                    .join('');
+                const selector = state.tag + selectorSuffix;
+                element = document.querySelector(selector);
+            }
+            if (!element) {
+                pendingFocusState = null;
+                return;
+            }
+            try {
+                element.focus({ preventScroll: true });
+            } catch (error) {
+                element.focus();
+            }
+            const inputType = element.type ? element.type.toLowerCase() : '';
+            if (inputType === 'number') {
+                const valueSnapshot = element.value;
+                element.value = '';
+                element.value = valueSnapshot;
+            }
+            if (state.selectionStart !== undefined && state.selectionEnd !== undefined && typeof element.setSelectionRange === 'function') {
+                if (inputType !== 'number') {
+                    const end = state.selectionEnd ?? state.selectionStart;
+                    try {
+                        element.setSelectionRange(state.selectionStart, end);
+                    } catch (error) {
+                        // Some input types don't allow selection ranges; ignore.
+                    }
+                }
+            }
+            pendingFocusState = null;
+        }
+
+        function handleGlobalDateChange(event) {
+            const input = event.target;
+            appState.date = input.value;
+            queuePendingFocus(input);
+            renderApp();
+        }
+
+        function handleApplyDateToTests() {
+            if (!appState.date) return;
+            appState.activeTests.forEach((test) => {
+                test.date = appState.date;
+            });
+            appState.successMessage = `Applied ${formatDateForDisplay(appState.date)} to ${appState.activeTests.length} test${appState.activeTests.length === 1 ? '' : 's'}.`;
+            setTimeout(() => {
+                appState.successMessage = null;
+                renderApp();
+            }, 3000);
+            renderApp();
+        }
+
+        function prepareChartData(sieveData) {
+            return sieveData
+                .filter(row => row.size > 0)
+                .map(row => {
+                    const data = {
+                        size: row.size,
+                        sieve: row.name,
+                        percentPassing: parseFloat(row.percentPassing)
+                    };
+                    if (row.c33Lower !== '-' && row.c33Lower !== null) data.c33Lower = row.c33Lower;
+                    if (row.c33Upper !== '-' && row.c33Upper !== null) data.c33Upper = row.c33Upper;
+                    return data;
+                });
+        }
+
+        function createSimpleChart(container, sieveData) {
+            const chartData = prepareChartData(sieveData);
+            if (chartData.length === 0) return;
+
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const margin = { top: 20, right: 40, bottom: 60, left: 40 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+
+            container.innerHTML = `
+                <svg class="chart-svg" viewBox="0 0 ${width} ${height}">
+                    <g transform="translate(${margin.left},${margin.top})">
+                        <g class="grid"></g>
+                        <g class="axis-x"></g>
+                        <g class="axis-y"></g>
+                        <g class="lines"></g>
+                        <g class="legend"></g>
+                    </g>
+                </svg>
+            `;
+
+            const svg = container.querySelector('svg g');
+            const xScale = (index) => (index / Math.max(1, chartData.length - 1)) * chartWidth;
+            const yScale = (value) => chartHeight - (value / 100) * chartHeight;
+
+            const grid = svg.querySelector('.grid');
+            for (let i = 0; i <= 10; i++) {
+                const y = (i / 10) * chartHeight;
+                grid.innerHTML += `<line x1="0" y1="${y}" x2="${chartWidth}" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>`;
+            }
+
+            const axisY = svg.querySelector('.axis-y');
+            for (let i = 0; i <= 10; i++) {
+                const value = i * 10;
+                const y = yScale(value);
+                axisY.innerHTML += `<text x="-5" y="${y + 4}" text-anchor="end" font-size="10" fill="#6b7280">${value}%</text>`;
+            }
+
+            const axisX = svg.querySelector('.axis-x');
+            chartData.forEach((point, index) => {
+                if (index % Math.max(1, Math.floor(chartData.length / 6)) === 0) {
+                    const x = xScale(index);
+                    axisX.innerHTML += `<text x="${x}" y="${chartHeight + 15}" text-anchor="middle" font-size="8" fill="#6b7280" transform="rotate(-45, ${x}, ${chartHeight + 15})">${point.sieve}</text>`;
+                }
+            });
+
+            const lines = svg.querySelector('.lines');
+            if (chartData.length > 1) {
+                let pathData = '';
+                chartData.forEach((point, index) => {
+                    const x = xScale(index);
+                    const y = yScale(point.percentPassing);
+                    pathData += index === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
+                });
+                lines.innerHTML += `<path d="${pathData}" stroke="#2563eb" stroke-width="2" fill="none"/>`;
+            }
+
+            const lowerPoints = chartData.filter(p => p.c33Lower !== null && p.c33Lower !== undefined);
+            if (lowerPoints.length > 1) {
+                let lowerPath = '';
+                chartData.forEach((point, index) => {
+                    if (point.c33Lower !== null && point.c33Lower !== undefined) {
+                        const x = xScale(index);
+                        const y = yScale(point.c33Lower);
+                        lowerPath += lowerPath === '' ? `M ${x} ${y}` : ` L ${x} ${y}`;
+                    }
+                });
+                if (lowerPath) lines.innerHTML += `<path d="${lowerPath}" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5,5" fill="none"/>`;
+            }
+
+            const upperPoints = chartData.filter(p => p.c33Upper !== null && p.c33Upper !== undefined);
+            if (upperPoints.length > 1) {
+                let upperPath = '';
+                chartData.forEach((point, index) => {
+                    if (point.c33Upper !== null && point.c33Upper !== undefined) {
+                        const x = xScale(index);
+                        const y = yScale(point.c33Upper);
+                        upperPath += upperPath === '' ? `M ${x} ${y}` : ` L ${x} ${y}`;
+                    }
+                });
+                if (upperPath) lines.innerHTML += `<path d="${upperPath}" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,5" fill="none"/>`;
+            }
+
+            const legend = svg.querySelector('.legend');
+            legend.innerHTML = `
+                <g transform="translate(10, 10)">
+                    <line x1="0" y1="0" x2="20" y2="0" stroke="#2563eb" stroke-width="2"/>
+                    <text x="25" y="4" font-size="9" fill="#374151">Sample</text>
+                    <line x1="0" y1="15" x2="20" y2="15" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+                    <text x="25" y="19" font-size="9" fill="#374151">ASTM C-33 Lower</text>
+                    <line x1="0" y1="30" x2="20" y2="30" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="3,3"/>
+                    <text x="25" y="34" font-size="9" fill="#374151">ASTM C-33 Upper</text>
+                </g>
+            `;
+        }
+
+        // ===== DATA SERVICE =====
+        const dataService = {
+            async saveRecord(record) {
+                try {
+                    const saved = await recordApi.create(record);
+                    return { success: true, data: saved };
+                } catch (error) {
+                    console.error('Error saving record:', error);
+                    return { success: false, error: error.message };
+                }
+            },
+            async getRepository() {
+                try {
+                    return await recordApi.list();
+                } catch (error) {
+                    console.error('Error loading records:', error);
+                    throw error;
+                }
+            },
+            async deleteRecord(recordId) {
+                try {
+                    await recordApi.remove(recordId);
+                    return { success: true };
+                } catch (error) {
+                    console.error('Error deleting record:', error);
+                    return { success: false, error: error.message };
+                }
+            },
+        };
+
+        // ===== EVENT HANDLERS =====
+        function handleWeightKeydown(event) {
+            const target = event.target;
+            const testIndex = parseInt(target.dataset.testIndex, 10);
+            const sieveIndex = parseInt(target.dataset.sieveIndex, 10);
+            let moveDirection = 0;
+
+            if (event.key === 'Enter' || event.key === 'ArrowDown') {
+                moveDirection = 1;
+            } else if (event.key === 'ArrowUp') {
+                moveDirection = -1;
+            }
+
+            if (moveDirection !== 0) {
+                event.preventDefault();
+                target.blur(); // Explicitly blur to trigger onchange and save the value.
+
+                const nextIndex = sieveIndex + moveDirection;
+                const test = appState.activeTests[testIndex];
+                if (!test) return;
+
+                if (moveDirection === 1 && nextIndex === test.sieveData.length) {
+                    const washedInput = document.querySelector(`input[data-focus-key="test-${test.id}-washed"]`);
+                    focusElement(washedInput);
+                    return;
+                }
+
+                if (nextIndex >= 0 && nextIndex < test.sieveData.length) {
+                    const nextInput = document.querySelector(`input[data-test-index="${testIndex}"][data-sieve-index="${nextIndex}"]`);
+                    if (nextInput) {
+                        nextInput.focus();
+                        nextInput.select();
+                    }
+                }
+            }
+        }
+
+        function focusElement(element) {
+            if (!element) return;
+            element.focus();
+            if (typeof element.select === 'function') {
+                element.select();
+            }
+        }
+
+        function handleWeightInput(event) {
+            const input = event.target;
+            const value = input.value;
+            const testIndex = parseInt(input.dataset.testIndex, 10);
+            const sieveIndex = parseInt(input.dataset.sieveIndex, 10);
+
+            const test = appState.activeTests[testIndex];
+            if (!test) return;
+
+            queuePendingFocus(input);
+            let normalized = value.replace(/[^0-9.]/g, '');
+            const parts = normalized.split('.');
+            if (parts.length > 2) {
+                normalized = parts[0] + '.' + parts.slice(1).join('');
+            }
+            if (normalized.startsWith('.')) {
+                normalized = '0' + normalized;
+            }
+            if (normalized.includes('.')) {
+                const [whole, fraction = ''] = normalized.split('.');
+                normalized = whole + '.' + fraction.slice(0, 1);
+            }
+            test.sieveData[sieveIndex].weightRetained = normalized;
+            recalcTest(test);
+            renderApp();
+        }
+
+        function handleWashedWeightChange(event) {
+            const input = event.target;
+            const testIndex = parseInt(input.dataset.testIndex, 10);
+            let value = input.value.replace(/[^0-9.]/g, '');
+            const parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            if (value.startsWith('.')) {
+                value = '0' + value;
+            }
+            if (value.includes('.')) {
+                const [whole, fraction = ''] = value.split('.');
+                value = whole + '.' + fraction.slice(0, 1);
+            }
+            const test = appState.activeTests[testIndex];
+            if (!test) return;
+            test.washedWeight = value;
+            queuePendingFocus(input);
+            recalcTest(test);
+            renderApp();
+        }
+
+        function handleWashedWeightKeydown(event) {
+            const input = event.target;
+            const testIndex = parseInt(input.dataset.testIndex, 10);
+            const lastSieveIndex = parseInt(input.dataset.lastSieveIndex, 10);
+
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                const previous = document.querySelector(`input[data-test-index="${testIndex}"][data-sieve-index="${lastSieveIndex}"]`);
+                focusElement(previous);
+                return;
+            }
+
+            if (event.key === 'Enter' || event.key === 'ArrowDown') {
+                event.preventDefault();
+                const notes = document.querySelector(`textarea[data-test-index="${testIndex}"]`);
+                if (notes) {
+                    focusElement(notes);
+                    return;
+                }
+                const saveButton = document.querySelector(`button[data-test-index="${testIndex}"][data-test-action="save"]`);
+                focusElement(saveButton);
+            }
+        }
+
+        function initializeTest(aggregateName, date) {
+            const aggregate = appState.aggregates[aggregateName];
+            if (!aggregate) return null;
+
+            const test = {
+                id: Date.now() + Math.random(),
+                date: date || new Date().toISOString().split('T')[0],
+                aggregateName,
+                aggregateType: aggregate.type,
+                sieveData: aggregate.sieves.map((sieve) => ({
+                    ...sieve,
+                    weightRetained: '',
+                    percentRetained: '0.0',
+                    cumulativeRetained: '0.0',
+                    percentPassing: sieve.name === 'Pan' ? '0' : '100'
+                })),
+                totalWeight: 0,
+                washedWeight: '',
+                finenessModulus: aggregate.type === 'Fine' ? '0.00' : 'N/A',
+                decant: '0.00',
+                tester: '',
+                notes: '',
+                status: 'In Progress',
+                idCounter: Math.random().toString(36).substr(2, 9)
+            };
+            recalcTest(test);
+            return test;
+        }
+
+        function handleAddTest(aggregateName) {
+            const test = initializeTest(aggregateName, appState.date);
+            if (test) {
+                appState.activeTests.push(test);
+                pendingFocusState = { tag: 'input', focusKey: `test-${test.id}-sieve-0`, dataset: { focusKey: `test-${test.id}-sieve-0` } };
+                renderApp();
+            }
+        }
+
+        function handleRemoveTest(testId) {
+            appState.activeTests = appState.activeTests.filter((test) => test.id !== testId);
+            renderApp();
+        }
+
+        function handleTestFieldChange(event) {
+            const input = event.target;
+            const testIndex = parseInt(input.dataset.testIndex, 10);
+            const field = input.dataset.field;
+            const value = input.value;
+            const test = appState.activeTests[testIndex];
+            if (!test) return;
+            test[field] = value;
+            queuePendingFocus(input);
+            renderApp();
+        }
+
+        function handleResetTest(testId) {
+            const test = appState.activeTests.find((t) => t.id === testId);
+            if (!test) return;
+
+            const aggregate = appState.aggregates[test.aggregateName];
+            if (!aggregate) return;
+
+            test.sieveData = aggregate.sieves.map((sieve) => ({
+                ...sieve,
+                weightRetained: '',
+                percentRetained: '0.0',
+                cumulativeRetained: '0.0',
+                percentPassing: sieve.name === 'Pan' ? '0' : '100'
+            }));
+            test.totalWeight = 0;
+            test.washedWeight = '';
+            test.finenessModulus = aggregate.type === 'Fine' ? '0.00' : 'N/A';
+            test.decant = '0.00';
+            test.status = 'In Progress';
+
+            recalcTest(test);
+            pendingFocusState = { tag: 'input', focusKey: `test-${test.id}-sieve-0`, dataset: { focusKey: `test-${test.id}-sieve-0` } };
+            renderApp();
+        }
+
+        function normalizeSieveDataForSaving(sieveData) {
+            const toNullableNumber = (value) => {
+                if (value === '-' || value === '' || value === null || value === undefined) return null;
+                return Number(value);
+            };
+
+            return sieveData.map((row) => ({
+                name: row.name,
+                size: Number(row.size ?? 0),
+                weightRetained: parseFloat(row.weightRetained) || 0,
+                percentRetained: parseFloat(row.percentRetained) || 0,
+                cumulativeRetained: parseFloat(row.cumulativeRetained) || 0,
+                percentPassing: parseFloat(row.percentPassing) || 0,
+                c33Lower: toNullableNumber(row.c33Lower),
+                c33Upper: toNullableNumber(row.c33Upper),
+            }));
+        }
+
+        function getStatusIndicator(record) {
+            const aggregateConfig = appState.aggregates[record.aggregateName];
+            if (!aggregateConfig) return '<span class="text-gray-500 text-xs">Unknown</span>';
+
+            const hasOutOfSpec = record.fullSieveData?.some((sieve) => {
+                if (sieve.c33Lower === '-' || sieve.c33Upper === '-') return false;
+                const passing = parseFloat(sieve.percentPassing);
+                const lower = parseFloat(sieve.c33Lower);
+                const upper = parseFloat(sieve.c33Upper);
+                if (Number.isNaN(passing) || Number.isNaN(lower) || Number.isNaN(upper)) return false;
+                return passing < lower || passing > upper;
+            });
+
+            if (hasOutOfSpec) {
+                return '<span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">Out of Spec</span>';
+            }
+            return '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">OK</span>';
+        }
+
+        async function handleSaveRecord(testId) {
+            const test = appState.activeTests.find((t) => t.id === testId);
+            if (!test) return;
+
+            const aggregate = appState.aggregates[test.aggregateName];
+            if (!aggregate) return;
+
+            recalcTest(test);
+            const sieveData = test.sieveData;
+
+            const recordPayload = {
+                date: test.date,
+                aggregateName: test.aggregateName,
+                aggregateType: test.aggregateType,
+                aggregateId: aggregate.id,
+                totalWeight: parseFloat(test.totalWeight) || 0,
+                washedWeight: test.washedWeight === '' ? null : parseFloat(test.washedWeight),
+                finenessModulus: test.finenessModulus === 'N/A' ? null : parseFloat(test.finenessModulus),
+                decant: test.decant === '' ? null : parseFloat(test.decant),
+                notes: test.notes || '',
+                tester: test.tester || '',
+                fullSieveData: normalizeSieveDataForSaving(sieveData),
+            };
+
+            try {
+                const response = await dataService.saveRecord(recordPayload);
+                if (response.success) {
+                    appState.savedRecords = await dataService.getRepository();
+                    appState.successMessage = 'Test saved to records!';
+                    appState.error = null;
+                    setTimeout(() => {
+                        appState.successMessage = null;
+                        renderApp();
+                    }, 3000);
+                } else {
+                    appState.error = response.error || 'Error saving test';
+                }
+            } catch (error) {
+                console.error('Error saving record:', error);
+                appState.error = error.message || 'Error saving test';
+            }
+
+            handleRemoveTest(testId);
+            renderApp();
+        }
+
+        function handleCancelTest(testId) {
+            handleRemoveTest(testId);
+        }
+
+        function handleQuickFilter(field, value) {
+            appState[field] = value;
+            renderApp();
+        }
+
+        function handleResetRepositoryFilters() {
+            appState.filterAggregate = '';
+            appState.filterType = '';
+            appState.filterDateFrom = '';
+            appState.filterDateTo = '';
+            appState.repositorySearch = '';
+            renderApp();
+        }
+
+        function applyRepositoryFilters(records) {
+            return records
+                .filter((record) => {
+                    if (appState.filterAggregate && record.aggregateName !== appState.filterAggregate) return false;
+                    if (appState.filterType && record.aggregateType !== appState.filterType) return false;
+                    if (appState.filterDateFrom && record.date < appState.filterDateFrom) return false;
+                    if (appState.filterDateTo && record.date > appState.filterDateTo) return false;
+                    if (appState.repositorySearch) {
+                        const search = appState.repositorySearch.toLowerCase();
+                        const haystack = [
+                            record.aggregateName,
+                            record.aggregateType,
+                            record.notes,
+                            record.tester
+                        ].join(' ').toLowerCase();
+                        if (!haystack.includes(search)) return false;
+                    }
+                    return true;
+                })
+                .sort((a, b) => {
+                    switch (appState.repositorySort) {
+                        case 'date-asc':
+                            return a.date.localeCompare(b.date);
+                        case 'name-asc':
+                            return a.aggregateName.localeCompare(b.aggregateName);
+                        case 'name-desc':
+                            return b.aggregateName.localeCompare(a.aggregateName);
+                        case 'date-desc':
+                        default:
+                            return b.date.localeCompare(a.date);
+                    }
+                });
+        }
+
+        function handleViewRecord(record) {
+            appState.viewingRecord = record;
+            renderApp();
+        }
+
+        function handlePrintRecord(record) {
+            if (!record) return;
+            appState.viewingRecord = record;
+            renderApp();
+            setTimeout(() => {
+                document.body.classList.add('js-printing-record');
+                window.print();
+                setTimeout(() => {
+                    document.body.classList.remove('js-printing-record');
+                }, 100);
+            }, 50);
+        }
+
+        function handleExportRecord(record) {
+            appState.showExportOptions = record.id;
+            renderApp();
+        }
+
+        function exportRecordAsCSV(record) {
+            if (!record) return;
+            const rows = [
+                ['Aggregate Gradation Record'],
+                ['Date', formatDateForDisplay(record.date)],
+                ['Aggregate', record.aggregateName],
+                ['Type', record.aggregateType],
+                ['Total Weight (g)', record.totalWeight],
+                ['Washed Weight (g)', record.washedWeight],
+                ['Fineness Modulus', record.finenessModulus],
+                ['Decant (%)', record.decant],
+                [],
+                ['Sieve', 'Size (mm)', 'Weight Retained (g)', '% Retained', 'Cum % Retained', '% Passing', 'Lower', 'Upper']
+            ];
+
+            (record.fullSieveData || []).forEach((sieve) => {
+                rows.push([
+                    sieve.name,
+                    sieve.size,
+                    sieve.weightRetained,
+                    sieve.percentRetained,
+                    sieve.cumulativeRetained,
+                    sieve.percentPassing,
+                    sieve.c33Lower,
+                    sieve.c33Upper
+                ]);
+            });
+
+            const csvContent = rows.map((row) => row.map((cell) => (cell === undefined ? '' : cell)).join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${record.aggregateName.replace(/\s+/g, '_')}_${record.date}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            appState.showExportOptions = null;
+        }
+
+        async function handleDeleteRecord(recordId) {
+            const response = await dataService.deleteRecord(recordId);
+            if (response.success) {
+                appState.savedRecords = await dataService.getRepository();
+                appState.confirmingDeleteRecord = null;
+            } else {
+                appState.error = response.error || 'Error deleting record';
+            }
+            renderApp();
+        }
+
+        function handleViewRecordById(recordId) {
+            const record = appState.savedRecords.find((r) => r.id === recordId);
+            if (record) {
+                handleViewRecord(record);
+            }
+        }
+
+        function handlePrintRecordById(recordId) {
+            const record = appState.savedRecords.find((r) => r.id === recordId);
+            if (record) {
+                handlePrintRecord(record);
+            }
+        }
+
+        function handleExportRecordById(recordId) {
+            const record = appState.savedRecords.find((r) => r.id === recordId);
+            if (record) {
+                handleExportRecord(record);
+            }
+        }
+
+        function exportRecordAsCSVById(recordId) {
+            const record = appState.savedRecords.find((r) => r.id === recordId);
+            if (record) {
+                exportRecordAsCSV(record);
+            }
+        }
+        function handleEditRecord(recordId) {
+            const record = appState.savedRecords.find((r) => r.id === recordId);
+            if (!record) return;
+            appState.editingRecord = JSON.parse(JSON.stringify(record));
+            appState.showEditModal = true;
+            renderApp();
+        }
+
+        function handleCancelEdit() {
+            appState.editingRecord = null;
+            appState.showEditModal = false;
+            renderApp();
+        }
+
+        function handleSaveEditedRecord() {
+            if (!appState.editingRecord) return;
+            const record = appState.editingRecord;
+            if (!record.fullSieveData) return;
+
+            record.fullSieveData = calculateTestData(
+                record.fullSieveData.map((sieve) => ({
+                    ...sieve,
+                    weightRetained: parseFloat(sieve.weightRetained) || 0
+                }))
+            );
+
+            record.totalWeight = record.fullSieveData.reduce((sum, row) => sum + (parseFloat(row.weightRetained) || 0), 0);
+            record.finenessModulus = calculateFinenessModulus(record.aggregateType, record.fullSieveData);
+            record.decant = calculateDecant(record.fullSieveData, record.washedWeight);
+
+            const response = dataService.saveRecord(record);
+            if (response.success) {
+                appState.savedRecords = dataService.getRepository();
+                appState.editingRecord = null;
+                appState.showEditModal = false;
+                appState.successMessage = 'Record updated successfully!';
+                setTimeout(() => {
+                    appState.successMessage = null;
+                    renderApp();
+                }, 3000);
+            } else {
+                appState.error = response.error || 'Error updating record';
+            }
+            renderApp();
+        }
+
+        function loadDefaultTests() {
+            appState.activeTests = [];
+            if (appState.defaultAggregates.length === 0) return;
+            appState.defaultAggregates.forEach((aggregateName) => {
+                const test = initializeTest(aggregateName, appState.date);
+                if (test) {
+                    appState.activeTests.push(test);
+                }
+            });
+        }
+
+        function toggleDefaultAggregate(aggregateName) {
+            if (appState.selectedDefaults.includes(aggregateName)) {
+                appState.selectedDefaults = appState.selectedDefaults.filter((name) => name !== aggregateName);
+            } else if (appState.selectedDefaults.length < 8) {
+                appState.selectedDefaults.push(aggregateName);
+            } else {
+                alert('You can select up to 8 default aggregates');
+            }
+            renderApp();
+        }
+
+        async function saveDefaults() {
+            const aggregateIds = appState.selectedDefaults
+                .map((name) => getAggregateIdByName(name))
+                .filter(Boolean);
+
+            try {
+                await aggregateApi.setDefaults(aggregateIds);
+                appState.defaultAggregates = [...appState.selectedDefaults];
+                appState.currentView = 'main';
+                loadDefaultTests();
+                alert(`Default aggregates saved! ${appState.defaultAggregates.length} aggregates will appear on the main page.`);
+            } catch (error) {
+                console.error('Error saving defaults:', error);
+                alert('Unable to save defaults. Please try again.');
+            }
+            renderApp();
+        }
+
+        function handleShowAddAggregate() {
+            appState.showAddForm = true;
+            appState.newAggregateName = '';
+            appState.newAggregateType = 'Fine';
+            appState.importFromExisting = '';
+            pendingFocusState = { tag: 'input', focusKey: 'aggregate-add-name', dataset: { focusKey: 'aggregate-add-name' } };
+            renderApp();
+        }
+
+        function handleCancelAddAggregate() {
+            appState.showAddForm = false;
+            appState.newAggregateName = '';
+            appState.importFromExisting = '';
+            renderApp();
+        }
+
+        async function handleSubmitNewAggregate(event) {
+            event.preventDefault();
+            const name = appState.newAggregateName.trim();
+            if (!name) {
+                alert('Aggregate name is required');
+                return;
+            }
+            if (appState.aggregates[name]) {
+                alert('An aggregate with this name already exists');
+                return;
+            }
+
+            let baseSieves = [];
+            if (appState.importFromExisting && appState.aggregates[appState.importFromExisting]) {
+                baseSieves = JSON.parse(JSON.stringify(appState.aggregates[appState.importFromExisting].sieves));
+            } else {
+                baseSieves = Object.entries(STANDARD_SIEVES).map(([sieveName, size]) => ({
+                    name: sieveName,
+                    size,
+                    c33Lower: '-',
+                    c33Upper: '-'
+                }));
+            }
+
+            try {
+                const created = await aggregateApi.create({
+                    name,
+                    type: appState.newAggregateType,
+                    sieves: sanitizeSievesForApi(baseSieves),
+                });
+
+                appState.aggregates[created.name] = {
+                    ...created,
+                    sieves: created.sieves,
+                };
+
+                appState.aggregateOrder.push(created.name);
+                appState.aggregateOrder.sort((a, b) => {
+                    const aggA = appState.aggregates[a];
+                    const aggB = appState.aggregates[b];
+                    return (aggA?.order ?? 0) - (aggB?.order ?? 0);
+                });
+
+                if (created.isDefault) {
+                    appState.defaultAggregates.push(created.name);
+                    appState.selectedDefaults = [...appState.defaultAggregates];
+                }
+
+                appState.showAddForm = false;
+                appState.newAggregateName = '';
+                appState.importFromExisting = '';
+                appState.successMessage = `Aggregate "${name}" created successfully!`;
+                setTimeout(() => {
+                    appState.successMessage = null;
+                    renderApp();
+                }, 3000);
+            } catch (error) {
+                console.error('Error creating aggregate:', error);
+                alert('Unable to create aggregate. Please try again.');
+            }
+            renderApp();
+        }
+
+        function handleEditAggregate(name) {
+            const aggregate = appState.aggregates[name];
+            if (!aggregate) return;
+            appState.editingAggregate = JSON.parse(JSON.stringify(aggregate));
+            appState.editingAggregateName = name;
+            pendingFocusState = { tag: 'select', focusKey: 'aggregate-edit-type', dataset: { focusKey: 'aggregate-edit-type' } };
+            renderApp();
+        }
+
+        function handleCancelEditAggregate() {
+            appState.editingAggregate = null;
+            appState.editingAggregateName = null;
+            renderApp();
+        }
+
+        async function handleSaveAggregateEdits() {
+            if (!appState.editingAggregateName || !appState.editingAggregate) return;
+
+            const original = appState.aggregates[appState.editingAggregateName];
+            if (!original) return;
+
+            const targetId = original.id;
+            const nextName = appState.editingAggregate.name?.trim() || appState.editingAggregateName;
+            if (!targetId) {
+                console.error('Missing aggregate id for update');
+                return;
+            }
+
+            try {
+                const updated = await aggregateApi.update(targetId, {
+                    name: nextName,
+                    type: appState.editingAggregate.type,
+                    maxDecant: appState.editingAggregate.maxDecant === '' ? null : appState.editingAggregate.maxDecant,
+                    sieves: sanitizeSievesForApi(appState.editingAggregate.sieves),
+                });
+
+                if (nextName !== appState.editingAggregateName) {
+                    delete appState.aggregates[appState.editingAggregateName];
+                    appState.defaultAggregates = appState.defaultAggregates.map((name) =>
+                        name === appState.editingAggregateName ? updated.name : name,
+                    );
+                    appState.selectedDefaults = appState.selectedDefaults.map((name) =>
+                        name === appState.editingAggregateName ? updated.name : name,
+                    );
+                    appState.aggregateOrder = appState.aggregateOrder.map((name) =>
+                        name === appState.editingAggregateName ? updated.name : name,
+                    );
+                }
+
+                appState.aggregates[updated.name] = {
+                    ...updated,
+                    sieves: updated.sieves,
+                };
+
+                appState.aggregateOrder.sort((a, b) => {
+                    const aggA = appState.aggregates[a];
+                    const aggB = appState.aggregates[b];
+                    return (aggA?.order ?? 0) - (aggB?.order ?? 0);
+                });
+
+                appState.successMessage = `Aggregate "${updated.name}" updated successfully!`;
+            } catch (error) {
+                console.error('Error updating aggregate:', error);
+                alert('Unable to update aggregate. Please try again.');
+            }
+
+            appState.editingAggregate = null;
+            appState.editingAggregateName = null;
+            setTimeout(() => {
+                appState.successMessage = null;
+                renderApp();
+            }, 3000);
+            renderApp();
+        }
+
+        async function handleDeleteAggregate(name) {
+            if (!confirm(`Delete aggregate "${name}"?`)) return;
+            const aggregate = appState.aggregates[name];
+            if (!aggregate) return;
+
+            try {
+                await aggregateApi.remove(aggregate.id);
+                delete appState.aggregates[name];
+                appState.defaultAggregates = appState.defaultAggregates.filter((item) => item !== name);
+                appState.selectedDefaults = appState.selectedDefaults.filter((item) => item !== name);
+                appState.aggregateOrder = appState.aggregateOrder.filter((item) => item !== name);
+                appState.successMessage = `Aggregate "${name}" deleted.`;
+            } catch (error) {
+                console.error('Error deleting aggregate:', error);
+                alert('Unable to delete aggregate. Please try again.');
+            }
+
+            setTimeout(() => {
+                appState.successMessage = null;
+                renderApp();
+            }, 3000);
+            renderApp();
+        }
+
+        async function handleDuplicateAggregate(name) {
+            const base = appState.aggregates[name];
+            if (!base) return;
+            let copyName = `${name} Copy`;
+            let counter = 1;
+            while (appState.aggregates[copyName]) {
+                counter += 1;
+                copyName = `${name} Copy ${counter}`;
+            }
+
+            try {
+                const duplicated = await aggregateApi.create({
+                    name: copyName,
+                    type: base.type,
+                    maxDecant: base.maxDecant,
+                    sieves: sanitizeSievesForApi(base.sieves),
+                });
+
+                appState.aggregates[duplicated.name] = {
+                    ...duplicated,
+                    sieves: duplicated.sieves,
+                };
+                appState.aggregateOrder.push(duplicated.name);
+                appState.aggregateOrder.sort((a, b) => {
+                    const aggA = appState.aggregates[a];
+                    const aggB = appState.aggregates[b];
+                    return (aggA?.order ?? 0) - (aggB?.order ?? 0);
+                });
+                appState.successMessage = `Aggregate duplicated as "${duplicated.name}".`;
+            } catch (error) {
+                console.error('Error duplicating aggregate:', error);
+                alert('Unable to duplicate aggregate. Please try again.');
+            }
+
+            setTimeout(() => {
+                appState.successMessage = null;
+                renderApp();
+            }, 3000);
+            renderApp();
+        }
+
+        function handleUpdateAggregateType(type, element) {
+            if (!appState.editingAggregate) return;
+            appState.editingAggregate.type = type;
+            if (element) queuePendingFocus(element);
+            renderApp();
+        }
+
+        function handleUpdateMaxDecant(value, element) {
+            if (!appState.editingAggregate) return;
+            const decant = value === '' ? null : parseFloat(value);
+            appState.editingAggregate.maxDecant = Number.isNaN(decant) ? null : decant;
+            if (element) queuePendingFocus(element);
+            renderApp();
+        }
+
+        function handleUpdateSieveField(index, field, value, element) {
+            if (!appState.editingAggregate) return;
+            const sieves = appState.editingAggregate.sieves;
+            if (!sieves[index]) return;
+            if (field === 'size') {
+                const size = parseFloat(value);
+                sieves[index][field] = Number.isNaN(size) ? '' : size;
+            } else if (field === 'c33Lower' || field === 'c33Upper') {
+                sieves[index][field] = value === '' ? '-' : value;
+            } else {
+                sieves[index][field] = value;
+            }
+            if (element) queuePendingFocus(element);
+            renderApp();
+        }
+
+        function handleAddSieveRow() {
+            if (!appState.editingAggregate) return;
+            appState.editingAggregate.sieves.push({
+                name: 'Custom',
+                size: 0,
+                c33Lower: '-',
+                c33Upper: '-'
+            });
+            renderApp();
+        }
+
+        function handleRemoveSieveRow(index) {
+            if (!appState.editingAggregate) return;
+            appState.editingAggregate.sieves.splice(index, 1);
+            renderApp();
+        }
+
+        function handleShowSieveSelector(index) {
+            appState.showSieveSelector = index;
+            renderApp();
+        }
+
+        function handleSelectStandardSieve(index, sieveName) {
+            if (!appState.editingAggregate) return;
+            const size = STANDARD_SIEVES[sieveName];
+            appState.editingAggregate.sieves[index].name = sieveName;
+            appState.editingAggregate.sieves[index].size = size;
+            appState.showSieveSelector = null;
+            pendingFocusState = { tag: 'input', focusKey: `aggregate-edit-sieve-${index}-size`, dataset: { focusKey: `aggregate-edit-sieve-${index}-size` } };
+            renderApp();
+        }
+
+        function handleShowBulkImport() {
+            appState.showBulkImport = true;
+            appState.bulkImportText = '';
+            appState.bulkImportError = null;
+            renderApp();
+        }
+
+        function handleBulkImportChange(event) {
+            appState.bulkImportText = event.target.value;
+            queuePendingFocus(event.target);
+        }
+
+        function parseBulkImport(text) {
+            try {
+                const data = JSON.parse(text);
+                if (typeof data !== 'object' || Array.isArray(data)) {
+                    throw new Error('Invalid format: expected object');
+                }
+                const aggregates = {};
+                Object.entries(data).forEach(([name, config]) => {
+                    if (!config || typeof config !== 'object') return;
+                    const { type, sieves, maxDecant } = config;
+                    if (!['Fine', 'Coarse'].includes(type)) return;
+                    aggregates[name] = {
+                        type,
+                        maxDecant: maxDecant ?? null,
+                        sieves: Array.isArray(sieves) ? sieves.map((sieve) => ({
+                            name: sieve.name || 'Custom',
+                            size: parseFloat(sieve.size) || 0,
+                            c33Lower: sieve.c33Lower === undefined ? '-' : sieve.c33Lower,
+                            c33Upper: sieve.c33Upper === undefined ? '-' : sieve.c33Upper
+                        })) : []
+                    };
+                });
+                return aggregates;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        async function handleBulkImportSubmit(event) {
+            event.preventDefault();
+            const parsed = parseBulkImport(appState.bulkImportText);
+            if (!parsed) {
+                appState.bulkImportError = 'Invalid JSON format. Please provide an object of aggregates.';
+                renderApp();
+                return;
+            }
+
+            try {
+                for (const [name, config] of Object.entries(parsed)) {
+                    const existing = appState.aggregates[name];
+                    const payload = {
+                        name,
+                        type: config.type,
+                        maxDecant: config.maxDecant ?? null,
+                        sieves: sanitizeSievesForApi(config.sieves || []),
+                    };
+
+                    if (existing) {
+                        await aggregateApi.update(existing.id, payload);
+                    } else {
+                        await aggregateApi.create(payload);
+                    }
+                }
+
+                const aggregates = await aggregateApi.list();
+                setAggregatesInState(aggregates);
+
+                appState.showBulkImport = false;
+                appState.bulkImportText = '';
+                appState.bulkImportError = null;
+                appState.successMessage = 'Bulk import completed successfully!';
+                setTimeout(() => {
+                    appState.successMessage = null;
+                    renderApp();
+                }, 3000);
+            } catch (error) {
+                console.error('Bulk import error:', error);
+                appState.bulkImportError = 'Unable to import aggregates. Please verify the data and try again.';
+            }
+            renderApp();
+        }
+
+        function handleToggleNoProduction(flag) {
+            appState.showNoProductionDateRange = flag;
+            if (flag) {
+                pendingFocusState = {
+                    tag: 'input',
+                    focusKey: 'no-production-start',
+                    dataset: { focusKey: 'no-production-start' }
+                };
+            }
+            renderApp();
+        }
+
+        function handleSaveNoProductionRange() {
+            if (!appState.noProductionStartDate || !appState.noProductionEndDate) {
+                alert('Please select both a start and end date');
+                return;
+            }
+            const start = formatDateForDisplay(appState.noProductionStartDate);
+            const end = formatDateForDisplay(appState.noProductionEndDate);
+            alert(`No production recorded between ${start} and ${end}.`);
+            appState.showNoProductionDateRange = false;
+            renderApp();
+        }
+
+        function handleNoProductionDateChange(field, value, element) {
+            if (field === 'start') {
+                appState.noProductionStartDate = value;
+            } else if (field === 'end') {
+                appState.noProductionEndDate = value;
+            }
+            if (element) queuePendingFocus(element);
+            renderApp();
+        }
+        function renderApp() {
+            const focusState = captureFocusState();
+            const app = document.getElementById('app');
+            if (!app) return;
+            app.innerHTML = '';
+
+            let viewingRecordChartData = null;
+
+            if (appState.currentView === 'admin') {
+                app.innerHTML = renderAdminView();
+            } else if (appState.currentView === 'repository') {
+                app.innerHTML = renderRepositoryView();
+            } else if (appState.currentView === 'configure-defaults') {
+                app.innerHTML = renderConfigureDefaults();
+            } else {
+                app.innerHTML = renderMainView();
+            }
+
+            app.innerHTML += renderPrintModal();
+
+            if (appState.viewingRecord) {
+                const record = appState.viewingRecord;
+                let displayData = record.fullSieveData;
+                const aggregateConfig = appState.aggregates[record.aggregateName];
+
+                if (displayData && aggregateConfig && displayData.length === aggregateConfig.sieves.length) {
+                    displayData = displayData.map((sieveResult, index) => ({
+                        ...aggregateConfig.sieves[index],
+                        ...sieveResult
+                    }));
+                }
+
+                if (!displayData && record.sieveResults && aggregateConfig) {
+                    let previousPassing = 100;
+                    displayData = aggregateConfig.sieves.map((sieve) => {
+                        const hasResult = record.sieveResults[sieve.name] !== undefined;
+                        const rawPassing = hasResult ? record.sieveResults[sieve.name] : undefined;
+                        const currentPassing = hasResult
+                            ? parseFloat(rawPassing)
+                            : sieve.name === 'Pan'
+                                ? 0
+                                : 100;
+                        const normalizedPassing = Number.isFinite(currentPassing) ? currentPassing : previousPassing;
+                        const percentRetained = previousPassing - normalizedPassing;
+                        const cumulativeRetained = 100 - normalizedPassing;
+                        const weightRetained = (percentRetained / 100) * (parseFloat(record.totalWeight) || 0);
+                        if (sieve.name !== 'Pan' && Number.isFinite(normalizedPassing)) {
+                            previousPassing = normalizedPassing;
+                        }
+                        return {
+                            ...sieve,
+                            weightRetained: weightRetained.toFixed(1),
+                            percentRetained: percentRetained.toFixed(1),
+                            cumulativeRetained: cumulativeRetained.toFixed(1),
+                            percentPassing: Math.round(normalizedPassing).toString()
+                        };
+                    });
+                }
+
+                const resolvedData = displayData || [];
+                app.innerHTML += renderViewRecordModal(record, resolvedData);
+                viewingRecordChartData = resolvedData;
+            }
+
+            if (appState.showEditModal && appState.editingRecord) {
+                app.innerHTML += renderEditModal();
+            }
+
+            app.innerHTML += renderNoProductionModal();
+
+            restoreFocusState(focusState);
+
+            requestAnimationFrame(() => {
+                restoreFocusState(focusState);
+                document.querySelectorAll('[data-chart-test-id]').forEach((chartEl) => {
+                    const testId = Number(chartEl.dataset.chartTestId);
+                    const test = appState.activeTests.find((t) => t.id === testId);
+                    if (test) {
+                        createSimpleChart(chartEl, test.sieveData);
+                    }
+                });
+                if (viewingRecordChartData && viewingRecordChartData.length > 0) {
+                    const chartContainer = document.getElementById('viewRecordChart');
+                    if (chartContainer) {
+                        createSimpleChart(chartContainer, viewingRecordChartData);
+                    }
+                }
+            });
+        }
+
+        function renderTestCard(test, index) {
+            const aggregateConfig = appState.aggregates[test.aggregateName];
+            const isFine = aggregateConfig?.type === 'Fine';
+
+            const lastSieveIndex = test.sieveData.length - 1;
+
+            const sieveRows = test.sieveData.map((sieve, sieveIndex) => `
+                <tr>
+                    <td class="border border-gray-300 px-2 py-1 text-left font-medium">${sieve.name}</td>
+                    <td class="border border-gray-300 px-2 py-1">
+                        <input
+                            type="text"
+                            inputmode="decimal"
+                            value="${sieve.weightRetained}"
+                            data-test-index="${index}"
+                            data-sieve-index="${sieveIndex}"
+                            data-focus-key="test-${test.id}-sieve-${sieveIndex}"
+                            onkeydown="handleWeightKeydown(event)"
+                            oninput="handleWeightInput(event)"
+                            class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 text-right"
+                        />
+                    </td>
+                    <td class="border border-gray-300 px-2 py-1 text-right">${parseFloat(sieve.percentRetained).toFixed(1)}%</td>
+                    <td class="border border-gray-300 px-2 py-1 text-right">${parseFloat(sieve.cumulativeRetained).toFixed(1)}%</td>
+                    <td class="border border-gray-300 px-2 py-1 text-right">${sieve.name === 'Pan' ? '&mdash;' : `${parseFloat(sieve.percentPassing).toFixed(0)}%`}</td>
+                    <td class="border border-gray-300 px-2 py-1 text-right">${sieve.c33Lower}</td>
+                    <td class="border border-gray-300 px-2 py-1 text-right">${sieve.c33Upper}</td>
+                </tr>
+            `).join('');
+
+            const totalWeightRow = `
+                <tr class="bg-blue-50">
+                    <td class="border border-gray-300 px-2 py-1 text-left font-medium">Total Weight (g)</td>
+                    <td class="border border-gray-300 px-2 py-1 text-right">${test.totalWeight}</td>
+                    <td class="border border-gray-300 px-2 py-1 text-center" colspan="5">&mdash;</td>
+                </tr>
+            `;
+
+            const washedRow = `
+                <tr class="bg-yellow-50">
+                    <td class="border border-gray-300 px-2 py-1 text-left font-medium">Washed Weight (g)</td>
+                    <td class="border border-gray-300 px-2 py-1">
+                        <input
+                            type="text"
+                            inputmode="decimal"
+                            value="${test.washedWeight}"
+                            data-test-index="${index}"
+                            data-last-sieve-index="${lastSieveIndex}"
+                            data-focus-key="test-${test.id}-washed"
+                            onkeydown="handleWashedWeightKeydown(event)"
+                            oninput="handleWashedWeightChange(event)"
+                            class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 text-right"
+                        />
+                    </td>
+                    <td class="border border-gray-300 px-2 py-1 text-center" colspan="5">Input washed weight to update decant automatically.</td>
+                </tr>
+            `;
+
+            return `
+                <div class="bg-white rounded-lg shadow-md p-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">${test.aggregateName}</h3>
+                            <p class="text-sm text-gray-500">Type: ${test.aggregateType}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <span class="text-xs text-gray-500 mr-2">Calculations update as you type.</span>
+                            <button class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700" data-test-index="${index}" data-test-action="save" onclick="handleSaveRecord(${test.id})">Save</button>
+                            <button class="px-3 py-1.5 text-sm bg-orange-600 text-white rounded hover:bg-orange-700" onclick="handleResetTest(${test.id})">Reset</button>
+                            <button class="px-3 py-1.5 text-sm bg-gray-600 text-white rounded hover:bg-gray-700" onclick="handleCancelTest(${test.id})">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                            <input type="date" value="${test.date}" data-test-index="${index}" data-field="date" data-focus-key="test-${test.id}-date" onchange="handleTestFieldChange(event)" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Tester</label>
+                            <input type="text" value="${test.tester}" data-test-index="${index}" data-field="tester" data-focus-key="test-${test.id}-tester" onchange="handleTestFieldChange(event)" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Notes</label>
+                        <textarea data-test-index="${index}" data-field="notes" data-focus-key="test-${test.id}-notes" onchange="handleTestFieldChange(event)" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400">${test.notes}</textarea>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="overflow-x-auto border border-gray-200 rounded">
+                            <table class="w-full text-xs">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="border border-gray-300 px-2 py-1 text-left">Sieve</th>
+                                        <th class="border border-gray-300 px-2 py-1">Weight (g)</th>
+                                        <th class="border border-gray-300 px-2 py-1">% Ret</th>
+                                        <th class="border border-gray-300 px-2 py-1">Cum %</th>
+                                        <th class="border border-gray-300 px-2 py-1">% Pass</th>
+                                        <th class="border border-gray-300 px-2 py-1">Lower</th>
+                                        <th class="border border-gray-300 px-2 py-1">Upper</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sieveRows}${totalWeightRow}${washedRow}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div>
+                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                <div class="bg-green-50 border border-green-400 rounded p-3">
+                                    <div class="text-xs text-green-600 font-semibold uppercase">Fineness Modulus</div>
+                                    <div class="text-xl font-bold text-green-800">${isFine ? test.finenessModulus : 'N/A'}</div>
+                                </div>
+                                <div class="bg-yellow-50 border border-yellow-400 rounded p-3">
+                                    <div class="text-xs text-gray-600 font-semibold uppercase">Decant (%)</div>
+                                    <div class="text-xl font-bold text-gray-800">${test.decant}</div>
+                                </div>
+                            </div>
+                            <div class="chart-container h-[18rem]" data-chart-test-id="${test.id}"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        function renderMainView() {
+            const aggregates = appState.aggregateOrder.length > 0 ? appState.aggregateOrder : Object.keys(appState.aggregates);
+            const defaultAggregates = appState.defaultAggregates.length > 0 ? appState.defaultAggregates : aggregates.slice(0, 4);
+
+            return `
+                <div class="space-y-4">
+                    <header class="bg-white rounded-lg shadow-md p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Aggregate Gradation Analysis</h1>
+                            <p class="text-sm text-gray-500">Manage tests, repository, and aggregate configurations</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="appState.currentView = 'repository'; renderApp();">Records</button>
+                            <button class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700" onclick="appState.currentView = 'admin'; renderApp();">Aggregate Admin</button>
+                            <button class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700" onclick="appState.currentView = 'configure-defaults'; renderApp();">Configure Defaults</button>
+                        </div>
+                    </header>
+
+                    <section class="bg-white rounded-lg shadow-md p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs font-medium text-gray-600">Test Date</label>
+                                <input type="date" value="${appState.date}" data-focus-key="global-test-date" onchange="handleGlobalDateChange(event)" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400">
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="handleApplyDateToTests()">Apply to All Tests</button>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded border border-yellow-400 hover:bg-yellow-50" onclick="handleToggleNoProduction(true)">No Production</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-white rounded-lg shadow-md p-4">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                            <div>
+                                <h2 class="text-xl font-semibold text-gray-800">Create Tests</h2>
+                                <p class="text-sm text-gray-500">Select aggregates to prepare test forms</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${defaultAggregates.map((aggregateName) => `
+                                    <button class="px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700" data-aggregate="${escapeHtmlAttr(aggregateName)}" onclick="handleAddTest(this.dataset.aggregate)">
+                                        ${aggregateName}
+                                    </button>
+                                `).join('')}
+                                <div class="relative">
+                                    <select onchange="handleAddTest(this.value); this.selectedIndex = 0;" class="px-3 py-1.5 bg-white border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400">
+                                        <option selected disabled>Add Aggregate</option>
+                                        ${aggregates.map((aggregateName) => `<option value="${escapeHtmlAttr(aggregateName)}">${aggregateName}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                <button class="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded border border-yellow-400 hover:bg-yellow-50" onclick="appState.showPrintModal = true; renderApp();">Print Blank Forms</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    ${appState.successMessage ? `<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">${appState.successMessage}</div>` : ''}
+                    ${appState.error ? `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">${appState.error}</div>` : ''}
+
+                    <section class="space-y-4">
+                        ${appState.activeTests.length === 0 ? `
+                            <div class="bg-white rounded-lg shadow-md p-8 text-center text-gray-500">
+                                <p>No active tests. Select an aggregate to begin.</p>
+                            </div>
+                        ` : appState.activeTests.map((test, index) => renderTestCard(test, index)).join('')}
+                    </section>
+                </div>
+            `;
+        }
+
+        function renderRepositoryView() {
+            const filteredRecords = applyRepositoryFilters(appState.savedRecords);
+            const aggregates = appState.aggregateOrder.length > 0 ? appState.aggregateOrder : Object.keys(appState.aggregates);
+            const sieveSizes = Array.from(new Set(filteredRecords.flatMap(record => record.fullSieveData?.map(s => s.name) || Object.keys(STANDARD_SIEVES))));
+
+            return `
+                <div class="space-y-4">
+                    <header class="bg-white rounded-lg shadow-md p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Test Records</h1>
+                            <p class="text-sm text-gray-500">View and manage saved gradation tests</p>
+                        </div>
+                        <button class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700" onclick="appState.currentView = 'main'; renderApp();">Back to Main</button>
+                    </header>
+
+                    <section class="bg-white rounded-lg shadow-md p-4 space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Aggregate</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded" onchange="appState.filterAggregate = this.value; renderApp();">
+                                    <option value="">All Aggregates</option>
+                                    ${aggregates.map((aggregateName) => `
+                                        <option value="${aggregateName}" ${appState.filterAggregate === aggregateName ? 'selected' : ''}>${aggregateName}</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Type</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded" onchange="appState.filterType = this.value; renderApp();">
+                                    <option value="">All Types</option>
+                                    <option value="Fine" ${appState.filterType === 'Fine' ? 'selected' : ''}>Fine</option>
+                                    <option value="Coarse" ${appState.filterType === 'Coarse' ? 'selected' : ''}>Coarse</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Date From</label>
+                                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded" value="${appState.filterDateFrom}" onchange="appState.filterDateFrom = this.value; renderApp();">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Date To</label>
+                                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded" value="${appState.filterDateTo}" onchange="appState.filterDateTo = this.value; renderApp();">
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div class="flex gap-2">
+                                <input type="text" placeholder="Search" value="${appState.repositorySearch}" class="px-3 py-2 border border-gray-300 rounded w-full sm:w-64" onchange="appState.repositorySearch = this.value; renderApp();">
+                                <select class="px-3 py-2 border border-gray-300 rounded" onchange="appState.repositorySort = this.value; renderApp();">
+                                    <option value="date-desc" ${appState.repositorySort === 'date-desc' ? 'selected' : ''}>Newest First</option>
+                                    <option value="date-asc" ${appState.repositorySort === 'date-asc' ? 'selected' : ''}>Oldest First</option>
+                                    <option value="name-asc" ${appState.repositorySort === 'name-asc' ? 'selected' : ''}>Aggregate A-Z</option>
+                                    <option value="name-desc" ${appState.repositorySort === 'name-desc' ? 'selected' : ''}>Aggregate Z-A</option>
+                                </select>
+                            </div>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded border border-gray-300 hover:bg-gray-50" onclick="handleResetRepositoryFilters()">Reset Filters</button>
+                        </div>
+                    </section>
+
+                    <section class="bg-white rounded-lg shadow-md">
+                        ${filteredRecords.length === 0 ? `
+                            <div class="p-6 text-center text-gray-500">No records match the current filters.</div>
+                        ` : `
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="border border-gray-300 px-2 py-1 text-left sticky left-0 bg-gray-100">Date</th>
+                                            <th class="border border-gray-300 px-2 py-1 text-left">Aggregate</th>
+                                            <th class="border border-gray-300 px-2 py-1">Type</th>
+                                            <th class="border border-gray-300 px-2 py-1">F.M.</th>
+                                            ${sieveSizes.map((size) => `<th class="border border-gray-300 px-2 py-1">${size}</th>`).join('')}
+                                            <th class="border border-gray-300 px-2 py-1">Decant</th>
+                                            <th class="border border-gray-300 px-2 py-1">Status</th>
+                                            <th class="border border-gray-300 px-2 py-1">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${filteredRecords.map((record, index) => {
+                                            const rowClass = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                                            return `
+                                                <tr class="${rowClass}">
+                                                    <td class="border border-gray-300 px-2 py-1 sticky left-0 bg-inherit">${formatDateForDisplay(record.date)}</td>
+                                                    <td class="border border-gray-300 px-2 py-1">
+                                                        <button class="text-blue-600 hover:text-blue-800 underline" data-filter-aggregate="${escapeHtmlAttr(record.aggregateName)}" onclick="handleQuickFilter('filterAggregate', this.dataset.filterAggregate)">${record.aggregateName}</button>
+                                                    </td>
+                                                    <td class="border border-gray-300 px-2 py-1">${record.aggregateType}</td>
+                                                    <td class="border border-gray-300 px-2 py-1">${record.finenessModulus}</td>
+                                                    ${sieveSizes.map((size) => {
+                                                        const sieve = record.fullSieveData?.find((s) => s.name === size);
+                                                        if (!sieve) return '<td class="border border-gray-300 px-2 py-1">-</td>';
+                                                        const passing = parseFloat(sieve.percentPassing);
+                                                        const lower = sieve.c33Lower === '-' ? null : parseFloat(sieve.c33Lower);
+                                                        const upper = sieve.c33Upper === '-' ? null : parseFloat(sieve.c33Upper);
+                                                        const inSpec = lower !== null && upper !== null ? passing >= lower && passing <= upper : null;
+                                                        const passingDisplay = Number.isNaN(passing) ? '-' : passing.toFixed(0);
+                                                        const retainedDisplay = Number.isNaN(parseFloat(sieve.percentRetained)) ? '-' : parseFloat(sieve.percentRetained).toFixed(0);
+                                                        return `
+                                                            <td class="border border-gray-300 px-0 py-0 text-center">
+                                                                <div class="border-b border-gray-300 px-2 py-0.5">${retainedDisplay}</div>
+                                                                <div class="px-2 py-0.5 ${inSpec === null ? '' : inSpec ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}">${passingDisplay}</div>
+                                                            </td>
+                                                        `;
+                                                    }).join('')}
+                                                    <td class="border border-gray-300 px-2 py-1">${record.decant}</td>
+                                                    <td class="border border-gray-300 px-2 py-1">${getStatusIndicator(record)}</td>
+                                                    <td class="border border-gray-300 px-2 py-1">
+                                                        <div class="flex flex-wrap gap-2 justify-center">
+                                                            <button class="text-blue-600 hover:text-blue-800 underline" onclick="handleViewRecordById(${record.id})">View</button>
+                                                            <button class="text-orange-600 hover:text-orange-800 underline" onclick="handleEditRecord(${record.id})">Edit</button>
+                                                            <button class="text-green-600 hover:text-green-800 underline" onclick="handlePrintRecordById(${record.id})">Print</button>
+                                                            <div class="relative">
+                                                                <button class="text-purple-600 hover:text-purple-800 underline" onclick="handleExportRecordById(${record.id})">Export</button>
+                                                                ${appState.showExportOptions === record.id ? `
+                                                                    <div class="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded z-10 p-2 space-y-1">
+                                                                        <button class="block w-full text-left px-2 py-1 text-sm hover:bg-gray-50" onclick="exportRecordAsCSVById(${record.id})">Export CSV</button>
+                                                                        <button class="block w-full text-left px-2 py-1 text-sm hover:bg-gray-50" onclick="handlePrintRecordById(${record.id})">Print</button>
+                                                                    </div>
+                                                                ` : ''}
+                                                            </div>
+                                                            ${appState.confirmingDeleteRecord === record.id ? `
+                                                                <div class="flex gap-1">
+                                                                    <button class="px-2 py-0.5 bg-red-600 text-white rounded text-xs" onclick="handleDeleteRecord(${record.id})">Confirm</button>
+                                                                    <button class="text-gray-600 underline text-xs" onclick="appState.confirmingDeleteRecord = null; renderApp();">Cancel</button>
+                                                                </div>
+                                                            ` : `
+                                                                <button class="text-red-600 hover:text-red-800 underline" onclick="appState.confirmingDeleteRecord = ${record.id}; renderApp();">Delete</button>
+                                                            `}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `}
+                    </section>
+                </div>
+            `;
+        }
+        function renderAdminView() {
+            const aggregates = Object.entries(appState.aggregates);
+            const aggregateList = aggregates.map(([name, config]) => `
+                <div class="border border-gray-200 rounded-lg p-4 bg-white">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">${name}</h3>
+                            <p class="text-sm text-gray-500">Type: ${config.type}</p>
+                            ${config.maxDecant !== null && config.maxDecant !== undefined ? `<p class="text-xs text-gray-500">Max Decant: ${config.maxDecant}%</p>` : ''}
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700" data-aggregate="${escapeHtmlAttr(name)}" onclick="handleEditAggregate(this.dataset.aggregate)">Edit</button>
+                            <button class="px-3 py-1.5 text-sm bg-purple-600 text-white rounded hover:bg-purple-700" data-aggregate="${escapeHtmlAttr(name)}" onclick="handleDuplicateAggregate(this.dataset.aggregate)">Duplicate</button>
+                            <button class="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700" data-aggregate="${escapeHtmlAttr(name)}" onclick="handleDeleteAggregate(this.dataset.aggregate)">Delete</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto mt-3">
+                        <table class="w-full text-xs">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border border-gray-300 px-2 py-1 text-left">Sieve</th>
+                                    <th class="border border-gray-300 px-2 py-1">Size (mm)</th>
+                                    <th class="border border-gray-300 px-2 py-1">ASTM Lower</th>
+                                    <th class="border border-gray-300 px-2 py-1">ASTM Upper</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${config.sieves.map((sieve) => `
+                                    <tr>
+                                        <td class="border border-gray-300 px-2 py-1 text-left">${sieve.name}</td>
+                                        <td class="border border-gray-300 px-2 py-1">${sieve.size}</td>
+                                        <td class="border border-gray-300 px-2 py-1">${sieve.c33Lower}</td>
+                                        <td class="border border-gray-300 px-2 py-1">${sieve.c33Upper}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="space-y-4">
+                    <header class="bg-white rounded-lg shadow-md p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Aggregate Administration</h1>
+                            <p class="text-sm text-gray-500">Manage aggregate sieve configurations and defaults</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700" onclick="appState.currentView = 'main'; renderApp();">Back to Main</button>
+                            <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700" onclick="handleShowAddAggregate()">Add Aggregate</button>
+                            <button class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700" onclick="handleShowBulkImport()">Bulk Import</button>
+                        </div>
+                    </header>
+
+                    ${appState.showAddForm ? renderAddAggregateForm() : ''}
+
+                    ${appState.editingAggregate ? renderEditAggregateForm() : ''}
+
+                    ${appState.showBulkImport ? renderBulkImportModal() : ''}
+
+                    <section class="space-y-3">
+                        ${aggregateList || '<div class="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">No aggregates configured yet.</div>'}
+                    </section>
+                </div>
+            `;
+        }
+
+        function renderAddAggregateForm() {
+            const aggregateOptions = appState.aggregateOrder.length > 0 ? appState.aggregateOrder : Object.keys(appState.aggregates);
+
+            return `
+                <div class="bg-white rounded-lg shadow-md p-4">
+                    <h2 class="text-lg font-semibold mb-3">Add New Aggregate</h2>
+                    <form class="grid grid-cols-1 md:grid-cols-2 gap-3" onsubmit="handleSubmitNewAggregate(event)">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Aggregate Name</label>
+                            <input type="text" required class="w-full px-3 py-2 border border-gray-300 rounded" value="${appState.newAggregateName}" data-add-aggregate-field="name" data-focus-key="aggregate-add-name" oninput="appState.newAggregateName = this.value; queuePendingFocus(this);">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Type</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded" data-add-aggregate-field="type" data-focus-key="aggregate-add-type" onchange="appState.newAggregateType = this.value; queuePendingFocus(this);">
+                                <option value="Fine" ${appState.newAggregateType === 'Fine' ? 'selected' : ''}>Fine</option>
+                                <option value="Coarse" ${appState.newAggregateType === 'Coarse' ? 'selected' : ''}>Coarse</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Import From Existing Aggregate</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded" data-add-aggregate-field="import" data-focus-key="aggregate-add-import" onchange="appState.importFromExisting = this.value; queuePendingFocus(this);">
+                                <option value="">(Start from blank template)</option>
+                                ${aggregateOptions.map((name) => `<option value="${escapeHtmlAttr(name)}">${name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="md:col-span-2 flex gap-2">
+                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Create Aggregate</button>
+                            <button type="button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400" onclick="handleCancelAddAggregate()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        function renderEditAggregateForm() {
+            const aggregate = appState.editingAggregate;
+            const sieves = aggregate.sieves;
+
+            return `
+                <div class="bg-white rounded-lg shadow-md p-4">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+                        <div>
+                            <h2 class="text-lg font-semibold">Edit Aggregate: ${appState.editingAggregateName}</h2>
+                            <p class="text-sm text-gray-500">Adjust sieve configuration and limits</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700" onclick="handleSaveAggregateEdits()">Save Changes</button>
+                            <button class="px-3 py-1.5 bg-gray-400 text-white rounded hover:bg-gray-500" onclick="handleCancelEditAggregate()">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Type</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded" data-edit-aggregate-control="type" data-focus-key="aggregate-edit-type" onchange="handleUpdateAggregateType(this.value, this)">
+                                <option value="Fine" ${aggregate.type === 'Fine' ? 'selected' : ''}>Fine</option>
+                                <option value="Coarse" ${aggregate.type === 'Coarse' ? 'selected' : ''}>Coarse</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Max Decant (%)</label>
+                            <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded" value="${aggregate.maxDecant ?? ''}" data-edit-aggregate-control="max-decant" data-focus-key="aggregate-edit-max-decant" oninput="handleUpdateMaxDecant(this.value, this)">
+                        </div>
+                        <div class="flex items-end">
+                            <button class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="handleAddSieveRow()">Add Sieve</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border border-gray-300 px-2 py-1 text-left">Sieve</th>
+                                    <th class="border border-gray-300 px-2 py-1">Size (mm)</th>
+                                    <th class="border border-gray-300 px-2 py-1">ASTM Lower</th>
+                                    <th class="border border-gray-300 px-2 py-1">ASTM Upper</th>
+                                    <th class="border border-gray-300 px-2 py-1">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sieves.map((sieve, index) => `
+                                    <tr>
+                                        <td class="border border-gray-300 px-2 py-1 text-left">
+                                            <div class="flex items-center gap-2">
+                                                <input type="text" value="${sieve.name}" class="w-full px-2 py-1 border border-gray-300 rounded" data-edit-sieve-index="${index}" data-sieve-field="name" data-focus-key="aggregate-edit-sieve-${index}-name" oninput="handleUpdateSieveField(${index}, 'name', this.value, this)">
+                                                <button class="px-2 py-0.5 bg-gray-200 text-gray-600 rounded hover:bg-gray-300" onclick="handleShowSieveSelector(${index})">Select</button>
+                                            </div>
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1">
+                                            <input type="number" step="0.01" value="${sieve.size}" class="w-full px-2 py-1 border border-gray-300 rounded" data-edit-sieve-index="${index}" data-sieve-field="size" data-focus-key="aggregate-edit-sieve-${index}-size" oninput="handleUpdateSieveField(${index}, 'size', this.value, this)">
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1">
+                                            <input type="number" step="0.01" value="${sieve.c33Lower === '-' ? '' : sieve.c33Lower}" class="w-full px-2 py-1 border border-gray-300 rounded" data-edit-sieve-index="${index}" data-sieve-field="c33Lower" data-focus-key="aggregate-edit-sieve-${index}-lower" oninput="handleUpdateSieveField(${index}, 'c33Lower', this.value, this)">
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1">
+                                            <input type="number" step="0.01" value="${sieve.c33Upper === '-' ? '' : sieve.c33Upper}" class="w-full px-2 py-1 border border-gray-300 rounded" data-edit-sieve-index="${index}" data-sieve-field="c33Upper" data-focus-key="aggregate-edit-sieve-${index}-upper" oninput="handleUpdateSieveField(${index}, 'c33Upper', this.value, this)">
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1">
+                                            <button class="px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-700" onclick="handleRemoveSieveRow(${index})">Remove</button>
+                                        </td>
+                                    </tr>
+                                    ${appState.showSieveSelector === index ? `
+                                        <tr>
+                                            <td colspan="5" class="border border-gray-300 px-2 py-2 bg-gray-50">
+                                                <div class="flex flex-wrap gap-2">
+                                                    ${Object.keys(STANDARD_SIEVES).map((sieveName) => `
+                                                        <button class="px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded hover:bg-gray-300" data-sieve="${escapeHtmlAttr(sieveName)}" onclick="handleSelectStandardSieve(${index}, this.dataset.sieve)">${sieveName}</button>
+                                                    `).join('')}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ` : ''}
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderBulkImportModal() {
+            return `
+                <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-3">
+                    <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-semibold">Bulk Import Aggregates</h2>
+                            <button class="text-gray-500 hover:text-gray-700 text-2xl" onclick="appState.showBulkImport = false; renderApp();">&times;</button>
+                        </div>
+                        <form onsubmit="handleBulkImportSubmit(event)">
+                            <textarea rows="10" class="w-full px-3 py-2 border border-gray-300 rounded" placeholder='{"Aggregate Name": {"type": "Fine", "sieves": [...]}}' data-bulk-import="input" data-focus-key="aggregate-bulk-import" oninput="handleBulkImportChange(event); queuePendingFocus(this);">${appState.bulkImportText}</textarea>
+                            ${appState.bulkImportError ? `<div class="text-red-600 text-sm mt-2">${appState.bulkImportError}</div>` : ''}
+                            <div class="flex justify-end gap-2 mt-3">
+                                <button type="button" class="px-3 py-1.5 bg-gray-400 text-white rounded hover:bg-gray-500" onclick="appState.showBulkImport = false; renderApp();">Cancel</button>
+                                <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700">Import</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+        }
+        function renderConfigureDefaults() {
+            const aggregates = appState.aggregateOrder.length > 0 ? appState.aggregateOrder : Object.keys(appState.aggregates);
+            return `
+                <div class="space-y-4">
+                    <header class="bg-white rounded-lg shadow-md p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Configure Default Aggregates</h1>
+                            <p class="text-sm text-gray-500">Select up to 8 aggregates to appear on the main screen</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700" onclick="appState.currentView = 'main'; renderApp();">Back to Main</button>
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="saveDefaults()">Save Defaults</button>
+                        </div>
+                    </header>
+                    <section class="bg-white rounded-lg shadow-md p-4">
+                        <p class="text-sm text-gray-500 mb-3">Selected: ${appState.selectedDefaults.length} / 8</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            ${aggregates.map((aggregateName) => {
+                                const selected = appState.selectedDefaults.includes(aggregateName);
+                                return `
+                                    <label class="border rounded-lg p-3 cursor-pointer transition-colors ${selected ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}">
+                                        <input type="checkbox" ${selected ? 'checked' : ''} class="mr-2" data-aggregate="${escapeHtmlAttr(aggregateName)}" onchange="toggleDefaultAggregate(this.dataset.aggregate)">
+                                        <span class="font-medium">${aggregateName}</span>
+                                        <span class="block text-xs text-gray-500">${appState.aggregates[aggregateName].type}</span>
+                                    </label>
+                                `;
+                            }).join('')}
+                        </div>
+                    </section>
+                </div>
+            `;
+        }
+
+        function renderNoProductionModal() {
+            if (!appState.showNoProductionDateRange) return '';
+            return `
+                <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-4">
+                    <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">No Production Range</h3>
+                            <button class="text-gray-500 hover:text-gray-700 text-2xl" onclick="handleToggleNoProduction(false)">&times;</button>
+                        </div>
+                        <div class="grid grid-cols-1 gap-3 mb-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+                                <input type="date" value="${appState.noProductionStartDate}" data-focus-key="no-production-start" onchange="handleNoProductionDateChange('start', this.value, this)" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">End Date</label>
+                                <input type="date" value="${appState.noProductionEndDate}" data-focus-key="no-production-end" onchange="handleNoProductionDateChange('end', this.value, this)" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button class="px-3 py-1.5 bg-gray-400 text-white rounded hover:bg-gray-500" onclick="handleToggleNoProduction(false)">Cancel</button>
+                            <button class="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="handleSaveNoProductionRange()">Save</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderViewRecordModal(record, sieveData) {
+            if (!record) return '';
+            const aggregateConfig = appState.aggregates[record.aggregateName];
+            const data = sieveData || [];
+            return `
+                <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                    <div class="bg-white rounded-lg shadow-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto print-all-content">
+                        <div class="flex justify-between items-center px-6 py-4 border-b no-print">
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800">${record.aggregateName}</h3>
+                                <p class="text-sm text-gray-500">${formatDateForDisplay(record.date)} &bull; ${record.aggregateType}</p>
+                            </div>
+                            <button class="text-gray-500 hover:text-gray-700 text-2xl" onclick="appState.viewingRecord = null; renderApp();">&times;</button>
+                        </div>
+                        <div class="px-6 py-4 space-y-4">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 record-view-grid">
+                                <div>
+                                    <h4 class="text-lg font-semibold mb-3">Gradation Results</h4>
+                                    <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+                                        <div class="bg-gray-100 p-3 rounded">
+                                            <div class="text-xs text-gray-500 uppercase">Total Weight</div>
+                                            <div class="text-lg font-semibold">${record.totalWeight} g</div>
+                                        </div>
+                                        <div class="bg-gray-100 p-3 rounded">
+                                            <div class="text-xs text-gray-500 uppercase">Washed Weight</div>
+                                            <div class="text-lg font-semibold">${record.washedWeight} g</div>
+                                        </div>
+                                        <div class="bg-gray-100 p-3 rounded">
+                                            <div class="text-xs text-gray-500 uppercase">Fineness Modulus</div>
+                                            <div class="text-lg font-semibold">${record.finenessModulus}</div>
+                                        </div>
+                                        <div class="bg-gray-100 p-3 rounded">
+                                            <div class="text-xs text-gray-500 uppercase">Decant</div>
+                                            <div class="text-lg font-semibold">${record.decant}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="overflow-x-auto border border-gray-200 rounded">
+                                        <table class="w-full text-xs">
+                                            <thead class="bg-gray-100">
+                                                <tr>
+                                                    <th class="border border-gray-300 px-2 py-1 text-left">Sieve</th>
+                                                    <th class="border border-gray-300 px-2 py-1">Weight (g)</th>
+                                                    <th class="border border-gray-300 px-2 py-1">% Ret.</th>
+                                                    <th class="border border-gray-300 px-2 py-1">Cum. %</th>
+                                                    <th class="border border-gray-300 px-2 py-1">% Pass</th>
+                                                    <th class="border border-gray-300 px-2 py-1">ASTM Lower</th>
+                                                    <th class="border border-gray-300 px-2 py-1">ASTM Upper</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${data.map((sieve, idx) => `
+                                                    <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                                                        <td class="border border-gray-300 px-2 py-1 text-left">${sieve.name}</td>
+                                                        <td class="border border-gray-300 px-2 py-1">${sieve.weightRetained}</td>
+                                                        <td class="border border-gray-300 px-2 py-1">${sieve.percentRetained}</td>
+                                                        <td class="border border-gray-300 px-2 py-1">${sieve.cumulativeRetained}</td>
+                                                        <td class="border border-gray-300 px-2 py-1">${sieve.name === 'Pan' ? '&mdash;' : `${parseFloat(sieve.percentPassing).toFixed(0)}%`}</td>
+                                                        <td class="border border-gray-300 px-2 py-1">${sieve.c33Lower}</td>
+                                                        <td class="border border-gray-300 px-2 py-1">${sieve.c33Upper}</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold mb-3">Gradation Curve</h4>
+                                    <div id="viewRecordChart" class="border border-gray-200 rounded h-96 bg-gray-50"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-6 py-4 border-t flex justify-end gap-2 no-print">
+                            <button class="px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700" onclick="handlePrintRecord(appState.viewingRecord)">Print</button>
+                            <button class="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="exportRecordAsCSV(appState.viewingRecord)">Export CSV</button>
+                            <button class="px-3 py-1.5 bg-gray-400 text-white rounded hover:bg-gray-500" onclick="appState.viewingRecord = null; renderApp();">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderEditModal() {
+            const record = appState.editingRecord;
+            if (!record) return '';
+            const aggregateOptions = (appState.aggregateOrder.length > 0 ? appState.aggregateOrder : Object.keys(appState.aggregates))
+                .map((name) => `<option value="${name}" ${name === record.aggregateName ? 'selected' : ''}>${name}</option>`)
+                .join('');
+            return `
+                <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-4">
+                    <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">Edit Test Record</h3>
+                            <button class="text-gray-500 hover:text-gray-700 text-2xl" onclick="handleCancelEdit()">&times;</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                                <input type="date" value="${record.date}" class="w-full px-3 py-2 border border-gray-300 rounded" onchange="appState.editingRecord.date = this.value; renderApp();">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Aggregate</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded" onchange="appState.editingRecord.aggregateName = this.value; appState.editingRecord.aggregateType = appState.aggregates[this.value].type; renderApp();">
+                                    ${aggregateOptions}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Washed Weight (g)</label>
+                                <input type="number" step="0.1" value="${record.washedWeight}" class="w-full px-3 py-2 border border-gray-300 rounded" onchange="appState.editingRecord.washedWeight = this.value; renderApp();">
+                            </div>
+                            <div class="bg-gray-100 p-3 rounded text-sm text-gray-600">
+                                <div>Type: ${record.aggregateType}</div>
+                                <div>Total Weight: ${record.totalWeight}</div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto border border-gray-200 rounded mb-4">
+                            <table class="w-full text-xs">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="border border-gray-300 px-2 py-1 text-left">Sieve</th>
+                                        <th class="border border-gray-300 px-2 py-1">Weight (g)</th>
+                                        <th class="border border-gray-300 px-2 py-1">% Ret.</th>
+                                        <th class="border border-gray-300 px-2 py-1">% Passing</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${record.fullSieveData?.map((sieve, index) => `
+                                        <tr>
+                                            <td class="border border-gray-300 px-2 py-1 text-left font-medium">${sieve.name}</td>
+                                            <td class="border border-gray-300 px-2 py-1">
+                                                <input type="number" step="0.1" value="${sieve.weightRetained || ''}" class="w-full px-2 py-1 border border-gray-300 rounded" onchange="appState.editingRecord.fullSieveData[${index}].weightRetained = parseFloat(this.value) || 0; renderApp();">
+                                            </td>
+                                            <td class="border border-gray-300 px-2 py-1">${sieve.percentRetained || '0.0'}%</td>
+                                            <td class="border border-gray-300 px-2 py-1">${sieve.percentPassing || '100'}%</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button class="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="handleSaveEditedRecord()">Save Changes</button>
+                            <button class="px-3 py-1.5 bg-gray-400 text-white rounded hover:bg-gray-500" onclick="handleCancelEdit()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPrintModal() {
+            if (!appState.showPrintModal) return '';
+            return `
+                <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-4 no-print">
+                    <div class="bg-white rounded-lg shadow-lg max-w-xl w-full p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Print Blank Forms</h3>
+                            <button class="text-gray-500 hover:text-gray-700 text-2xl" onclick="appState.showPrintModal = false; renderApp();">&times;</button>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Ready to print ${appState.activeTests.length} blank forms.</p>
+                        <div class="flex justify-end gap-2">
+                            <button class="px-3 py-1.5 bg-gray-400 text-white rounded hover:bg-gray-500" onclick="appState.showPrintModal = false; renderApp();">Cancel</button>
+                            <button class="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700" onclick="window.print(); appState.showPrintModal = false; renderApp();">Print</button>
+                        </div>
+                    </div>
+                </div>
+                ${renderPrintContent()}
+            `;
+        }
+
+        function renderPrintContent() {
+            if (appState.activeTests.length === 0) return '';
+            const formsPerPage = 5;
+            const pages = Math.ceil(appState.activeTests.length / formsPerPage);
+            let content = '<div class="print-only">';
+            for (let page = 0; page < pages; page++) {
+                content += '<div class="print-page"><div class="grid grid-cols-5 gap-4">';
+                const tests = appState.activeTests.slice(page * formsPerPage, (page + 1) * formsPerPage);
+                tests.forEach((test) => {
+                    const aggregate = appState.aggregates[test.aggregateName];
+                    content += `
+                        <div class="border-2 border-gray-800 p-2">
+                            <h4 class="text-sm font-semibold text-center mb-1">${test.aggregateName}</h4>
+                            <div class="text-xs text-center mb-2">Date: ${formatDateForDisplay(test.date)}</div>
+                            <table class="w-full text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-200">
+                                        <th class="border border-gray-800 px-1 py-0.5">Sieve</th>
+                                        <th class="border border-gray-800 px-1 py-0.5">Weight</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${aggregate.sieves.map((sieve) => `
+                                        <tr>
+                                            <td class="border border-gray-800 px-1 py-0.5 bg-gray-100 text-center">${sieve.name}</td>
+                                            <td class="border border-gray-800 px-1 py-0.5"></td>
+                                        </tr>
+                                    `).join('')}
+                                    <tr>
+                                        <td class="border border-gray-800 px-1 py-0.5 font-semibold">Washed:</td>
+                                        <td class="border border-gray-800 px-1 py-0.5"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+                content += '</div></div>';
+            }
+            return content + '</div>';
+        }
+
+        async function initializeApp() {
+            try {
+                const [aggregates, records] = await Promise.all([aggregateApi.list(), recordApi.list()]);
+                setAggregatesInState(aggregates);
+                appState.savedRecords = records;
+
+                if (appState.activeTests.length === 0 && appState.defaultAggregates.length > 0) {
+                    loadDefaultTests();
+                }
+            } catch (error) {
+                console.error('Initialization error:', error);
+                appState.error = 'Failed to load data from the server. Please verify the backend connection and reload.';
+            } finally {
+                renderApp();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
